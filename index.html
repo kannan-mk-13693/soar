@@ -1,0 +1,2142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+<title>Log360 SOAR — Release Tracker</title>
+<style>
+  :root {
+    /* light theme */
+    --bg: #f5f7fb;
+    --panel: #ffffff;
+    --panel-2: #f0f3fa;
+    --border: #e2e6f0;
+    --border-strong: #cdd4e3;
+    --text: #1a1f36;
+    --text-2: #2d3548;
+    --muted: #6b7388;
+    --accent: #4263eb;
+    --accent-2: #7048e8;
+    --ok: #12b886;
+    --warn: #f59f00;
+    --bad: #e03131;
+    --info: #1c7ed6;
+    --chip: #eef1f8;
+    --row-h: 34px;
+    --header-h: 56px;
+    --left-col: 340px;
+    --c-karthik: #4263eb;
+    --c-kannan: #12b886;
+    --c-shivraj: #f59f00;
+    --c-shared: #7048e8;
+    --shadow: 0 1px 3px rgba(15,23,42,0.06), 0 1px 2px rgba(15,23,42,0.04);
+    --shadow-lg: 0 4px 12px rgba(15,23,42,0.08);
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 13px;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  header.app-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 22px;
+    background: #ffffff;
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 20;
+    box-shadow: var(--shadow);
+  }
+  header.app-header .title { display: flex; align-items: center; gap: 12px; }
+  header.app-header h1 { margin: 0; font-size: 18px; font-weight: 600; letter-spacing: 0.2px; color: var(--text); }
+  header.app-header .sub { color: var(--muted); font-size: 12px; }
+  .logo {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-weight: 700; color: white; font-size: 13px;
+  }
+  header.app-header .actions { display: flex; gap: 8px; }
+  .btn {
+    background: #ffffff; color: var(--text); border: 1px solid var(--border-strong);
+    border-radius: 6px; padding: 6px 10px; cursor: pointer; font-size: 12px;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .btn:hover { background: var(--panel-2); border-color: var(--accent); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: white; }
+  .btn.primary:hover { background: #3554d8; border-color: #3554d8; }
+  .btn.danger { background: var(--bad); border-color: var(--bad); color: white; }
+  .btn.danger:hover { background: #c92828; }
+
+  nav.tabs {
+    display: flex; gap: 4px; padding: 8px 22px 0;
+    border-bottom: 1px solid var(--border);
+    background: #ffffff;
+    position: sticky; top: 120px; z-index: 15;
+    overflow-x: auto;
+  }
+  nav.tabs button {
+    background: transparent; border: none; color: var(--muted);
+    padding: 10px 14px; cursor: pointer; font-size: 13px;
+    border-bottom: 2px solid transparent; white-space: nowrap;
+    font-weight: 500;
+  }
+  nav.tabs button.active { color: var(--accent); border-bottom-color: var(--accent); }
+  nav.tabs button:hover { color: var(--text); }
+
+  main { padding: 20px 22px 80px; }
+
+  .grid { display: grid; gap: 16px; }
+  .grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+  .grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+  .grid.cols-2 { grid-template-columns: 1fr 1fr; }
+  @media (max-width: 1300px) { .grid.cols-4 { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 1100px) { .grid.cols-3 { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 800px) { .grid.cols-3, .grid.cols-2, .grid.cols-4 { grid-template-columns: 1fr; } }
+
+  .card {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px;
+    box-shadow: var(--shadow);
+  }
+  .card h2 {
+    margin: 0 0 12px; font-size: 14px; font-weight: 600; color: var(--text);
+    letter-spacing: 0.1px; display: flex; align-items: center; gap: 8px;
+  }
+  .card h2 .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+  .card .row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 6px 0; border-bottom: 1px dashed var(--border); font-size: 13px;
+  }
+  .card .row:last-child { border-bottom: none; }
+  .card .row .label { color: var(--muted); }
+
+  .chip {
+    display: inline-block; padding: 2px 8px; border-radius: 12px;
+    font-size: 11px; font-weight: 500; background: var(--chip);
+    border: 1px solid var(--border-strong); color: var(--text-2);
+  }
+  .chip.ok { background: #e6f7ee; color: #0a8754; border-color: #b6e6cf; }
+  .chip.warn { background: #fff7e0; color: #b07c00; border-color: #ffe49a; }
+  .chip.bad { background: #fde2e2; color: #b3252d; border-color: #f7b6b9; }
+  .chip.info { background: #e0eefc; color: #155a9f; border-color: #b8d6f5; }
+
+  .avatar {
+    width: 24px; height: 24px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700; color: white;
+    margin-right: 6px; vertical-align: middle;
+  }
+  .avatar.karthik { background: var(--c-karthik); }
+  .avatar.kannan { background: var(--c-kannan); }
+  .avatar.shivraj { background: var(--c-shivraj); }
+  .avatar.vishnu { background: #15aabf; }
+  .avatar.tmani { background: #d9480f; }
+  .avatar.shared { background: var(--c-shared); }
+
+  .stat-card {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px;
+    box-shadow: var(--shadow);
+  }
+  .stat-card .stat-label {
+    color: var(--muted); font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.5px; margin-bottom: 4px; font-weight: 600;
+  }
+  .stat-card .stat-value { font-size: 24px; font-weight: 700; color: var(--text); }
+  .stat-card .stat-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .stat-card.warn { background: #fff7e0; border-color: #ffe49a; }
+  .stat-card.warn .stat-value { color: #b07c00; }
+  .stat-card.bad { background: #fde2e2; border-color: #f7b6b9; }
+  .stat-card.bad .stat-value { color: #b3252d; }
+
+  /* ===== Gantt ===== */
+  .gantt-toolbar {
+    display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 12px;
+  }
+  .gantt-toolbar select, .gantt-toolbar input {
+    background: #ffffff; color: var(--text);
+    border: 1px solid var(--border-strong); border-radius: 6px;
+    padding: 6px 8px; font-size: 12px;
+  }
+  .gantt-toolbar select:focus, .gantt-toolbar input:focus {
+    outline: none; border-color: var(--accent);
+  }
+  .gantt-toolbar label { color: var(--muted); font-size: 12px; font-weight: 500; }
+
+  .gantt-wrapper {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 10px; overflow: hidden; box-shadow: var(--shadow);
+  }
+  .gantt-scroll { overflow: auto; max-height: 72vh; position: relative; }
+  .gantt-table {
+    display: grid;
+    grid-template-columns: var(--left-col) 1fr;
+    min-width: 1200px;
+  }
+  .gantt-left-header {
+    background: #f4f6fb; border-bottom: 1px solid var(--border);
+    height: var(--header-h); display: flex; align-items: center;
+    font-size: 12px; font-weight: 600; color: var(--text-2);
+    padding: 0 12px; border-right: 1px solid var(--border);
+    position: sticky; top: 0; left: 0; z-index: 6;
+  }
+  .gantt-right-header {
+    background: #f4f6fb; border-bottom: 1px solid var(--border);
+    height: var(--header-h); font-size: 12px; font-weight: 600;
+    color: var(--text-2);
+    padding: 0; position: sticky; top: 0; z-index: 4;
+  }
+  .gantt-left {
+    border-right: 1px solid var(--border);
+    background: var(--panel);
+    position: sticky; left: 0; z-index: 2;
+  }
+  .gantt-right {
+    position: relative;
+    background: repeating-linear-gradient(90deg, transparent 0 49px, rgba(15,23,42,0.025) 49px 50px);
+  }
+  .gantt-row {
+    height: var(--row-h);
+    display: flex; align-items: center;
+    padding: 0 12px;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px; cursor: pointer;
+    background: var(--panel);
+    color: var(--text);
+  }
+  .gantt-row:hover { background: #f4f6fb; }
+  .gantt-row.group-row {
+    background: #eef1ff;
+    font-weight: 600;
+    border-left: 3px solid var(--accent-2);
+    color: var(--text);
+  }
+  .gantt-row.group-row:hover { background: #e1e6ff; }
+  .gantt-row.sub-row { padding-left: 28px; color: var(--text-2); }
+  .gantt-row.blocked-row { background: #fde2e2; }
+  .gantt-row.blocked-row:hover { background: #fbcccc; }
+  .gantt-row .task-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .gantt-row .task-meta { color: var(--muted); font-size: 11px; margin-left: 8px; }
+
+  .gantt-bar-row {
+    height: var(--row-h); position: relative;
+    border-bottom: 1px solid var(--border);
+  }
+  .gantt-bar-row.group-row { background: rgba(112,72,232,0.06); }
+  .gantt-bar-row.blocked-row { background: rgba(224,49,49,0.06); }
+
+  .gantt-bar {
+    position: absolute; top: 6px; height: calc(var(--row-h) - 12px);
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: flex-start;
+    padding: 0 6px; font-size: 10px; color: white;
+    overflow: hidden; white-space: nowrap; cursor: pointer;
+    box-shadow: 0 1px 2px rgba(15,23,42,0.15);
+  }
+  .gantt-bar .progress {
+    position: absolute; top: 0; left: 0; bottom: 0;
+    background: rgba(255,255,255,0.30);
+    border-right: 1px solid rgba(255,255,255,0.5);
+  }
+  .gantt-bar .label {
+    position: relative; z-index: 1; font-weight: 600;
+    text-shadow: 0 1px 1px rgba(0,0,0,0.3);
+  }
+  .gantt-bar.dev { background: linear-gradient(180deg,#4263eb,#3148ad); }
+  .gantt-bar.bv { background: linear-gradient(180deg,#f59f00,#c47c00); color:#1a1a1a; }
+  .gantt-bar.iv { background: linear-gradient(180deg,#9c36b5,#7e2895); }
+  .gantt-bar.hv { background: linear-gradient(180deg,#1c7ed6,#1465ad); }
+  .gantt-bar.sv { background: linear-gradient(180deg,#0ca678,#08855f); }
+  .gantt-bar.release { background: linear-gradient(180deg,#12b886,#0e9670); }
+  .gantt-bar.dep { background: linear-gradient(180deg,#e03131,#b62525); }
+  /* Progress-based color scale — used for both dependency bars AND task bars */
+  .gantt-bar.prog-done   { background: linear-gradient(180deg,#12b886,#0e9670); }                 /* 100%  - green */
+  .gantt-bar.prog-mostly { background: linear-gradient(180deg,#51cf66,#37b24d); }                 /* 75-99% - light green */
+  .gantt-bar.prog-half   { background: linear-gradient(180deg,#f59f00,#c47c00); color:#1a1a1a; }  /* 50-74% - amber */
+  .gantt-bar.prog-low    { background: linear-gradient(180deg,#e8590c,#c14708); }                 /* 25-49% - orange */
+  .gantt-bar.prog-tiny   { background: linear-gradient(180deg,#fa5252,#c92a2a); }                 /* 1-24%  - red-orange */
+  .gantt-bar.prog-none   { background: linear-gradient(180deg,#e03131,#b62525); }                 /* 0%     - red */
+  .gantt-bar.cv { background: linear-gradient(180deg,#ae3ec9,#8a2faa); }
+  .gantt-bar.mkt { background: linear-gradient(180deg,#1c7ed6,#1465ad); }
+  .gantt-bar.auto { background: linear-gradient(180deg,#15aabf,#108b9c); }
+  .gantt-bar.sec { background: linear-gradient(180deg,#e8590c,#c14708); }
+  .gantt-bar.milestone {
+    background: linear-gradient(180deg,#7048e8,#5733cc);
+    border: 2px solid #ffd43b;
+  }
+  .gantt-bar.localzoho { background: linear-gradient(180deg,#1098ad,#0d7a8c); }
+  .gantt-bar.blocked {
+    background: repeating-linear-gradient(45deg,
+      #e03131 0, #e03131 8px,
+      #b62525 8px, #b62525 16px) !important;
+    border: 1px solid #8e1919;
+    color: #fff;
+  }
+
+  .phase-group-bar {
+    position: absolute; top: 8px; height: calc(var(--row-h) - 16px);
+    border-radius: 3px; opacity: 0.45;
+    border: 1px dashed rgba(15,23,42,0.25);
+    pointer-events: none;
+  }
+
+  .timeline-header {
+    display: flex; flex-direction: column; width: 100%; height: var(--header-h);
+  }
+  .month-row, .week-row { display: flex; flex: 1; }
+  .month-row .month-cell {
+    border-right: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 600; color: var(--text); font-size: 12px;
+  }
+  .week-row .week-cell {
+    border-right: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--muted); font-size: 10px;
+  }
+
+  .today-line {
+    position: absolute; top: 0; bottom: 0;
+    width: 2px; background: #e03131; z-index: 3; pointer-events: none;
+  }
+  .today-line::before {
+    content: 'Today'; position: absolute; top: 2px; left: 4px;
+    color: #e03131; font-size: 10px; font-weight: 700;
+    background: #ffffff; padding: 1px 4px; border-radius: 3px;
+    border: 1px solid #e03131;
+  }
+
+  .legend {
+    display: flex; gap: 12px; flex-wrap: wrap;
+    padding: 10px 16px; background: #f4f6fb;
+    border-top: 1px solid var(--border); font-size: 11px;
+    color: var(--text-2);
+  }
+  .legend .item { display: flex; align-items: center; gap: 5px; }
+  .legend .swatch { width: 14px; height: 10px; border-radius: 2px; }
+
+  /* ---- Release Target banner ---- */
+  .release-bar {
+    background: linear-gradient(90deg, #eef1ff 0%, #ffffff 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 22px;
+    display: flex; align-items: center; gap: 16px;
+    flex-wrap: wrap;
+    position: sticky; top: 60px; z-index: 16;
+  }
+  .release-bar .rt-icon { font-size: 20px; }
+  .release-bar .rt-label {
+    color: var(--muted); font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;
+  }
+  .release-bar .rt-date {
+    font-weight: 700; font-size: 16px; color: var(--text);
+    background: #ffffff; padding: 5px 12px; border-radius: 6px;
+    border: 1px solid var(--border-strong); cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .release-bar .rt-date:hover { border-color: var(--accent); background: #fafbfd; }
+  .release-bar .rt-date input {
+    background: transparent; border: none; font-weight: 700; font-size: 16px;
+    color: var(--text); padding: 0; width: 140px;
+  }
+  .release-bar .rt-date input:focus { outline: none; }
+  .release-bar .rt-countdown {
+    padding: 6px 12px; border-radius: 16px;
+    background: var(--ok); color: white; font-weight: 700; font-size: 13px;
+  }
+  .release-bar .rt-countdown.warn { background: var(--warn); color: #1a1a1a; }
+  .release-bar .rt-countdown.bad  { background: var(--bad); }
+  .release-bar .rt-progress {
+    flex: 1; min-width: 120px; max-width: 360px; height: 8px;
+    background: var(--panel-2); border-radius: 4px; overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .release-bar .rt-progress .fill {
+    height: 100%; background: linear-gradient(90deg, var(--accent), var(--ok));
+  }
+  .release-bar .rt-progress-pct { font-size: 12px; color: var(--muted); }
+  .release-bar .rt-note {
+    font-size: 11px; color: var(--muted);
+    margin-top: 2px;
+  }
+  .release-bar .rt-note b { color: var(--text); font-weight: 600; }
+  .release-bar .rt-note a {
+    color: var(--accent); text-decoration: underline; cursor: pointer; margin-left: 4px;
+  }
+  .rt-mode-tag {
+    display: inline-block; padding: 1px 6px; border-radius: 8px; font-size: 10px;
+    font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; margin-right: 4px;
+  }
+  .rt-mode-tag.auto   { background: #e0eefc; color: #155a9f; }
+  .rt-mode-tag.manual { background: #fff7e0; color: #b07c00; }
+
+  /* ---- PM Gantt — Frappe-inspired style ---- */
+  .gantt-bar.parent-bar {
+    background: linear-gradient(180deg, #2d3548, #1a1f36);
+    color: #ffffff;
+    height: calc(var(--row-h) - 12px);
+    border-radius: 3px;
+  }
+  .gantt-bar.parent-bar::before {
+    content: '▼'; color: #ffffff; font-size: 9px; margin-right: 5px;
+    position: relative; z-index: 1;
+  }
+  .gantt-bar.ontime { background: linear-gradient(180deg, #2ecc71, #27ae60); }
+  .gantt-bar.late   { background: linear-gradient(180deg, #e74c3c, #c0392b); }
+  .gantt-bar.upcoming { background: linear-gradient(180deg, #74c0fc, #4dabf7); }
+
+  /* Date labels rendered outside the bar (Frappe-style) — siblings of the bar in its row */
+  .bar-edge-label {
+    position: absolute; font-size: 10px; color: var(--text-2);
+    white-space: nowrap; pointer-events: none;
+    top: 50%; transform: translateY(-50%); font-weight: 500;
+  }
+  .bar-edge-label .dur  { color: var(--muted); margin-left: 4px; font-size: 10px; }
+
+  /* Modal */
+  .modal-bg {
+    position: fixed; inset: 0; background: rgba(15,23,42,0.4);
+    display: none; align-items: center; justify-content: center; z-index: 100;
+  }
+  .modal-bg.open { display: flex; }
+  .modal {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 10px; padding: 22px; width: 520px; max-width: 95%;
+    max-height: 90vh; overflow-y: auto;
+    box-shadow: var(--shadow-lg);
+  }
+  .modal h3 { margin: 0 0 14px; font-size: 16px; color: var(--text); }
+  .modal label { display: block; font-size: 12px; color: var(--muted); margin: 8px 0 4px; font-weight: 500; }
+  .modal input, .modal select, .modal textarea {
+    width: 100%; background: #ffffff; color: var(--text);
+    border: 1px solid var(--border-strong); border-radius: 6px; padding: 7px 9px;
+    font-size: 13px; font-family: inherit;
+  }
+  .modal input:focus, .modal select:focus, .modal textarea:focus {
+    outline: none; border-color: var(--accent);
+  }
+  .modal textarea { resize: vertical; min-height: 60px; }
+  .modal .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .modal .actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+  .progress-input { display: flex; align-items: center; gap: 8px; }
+  .progress-input input[type="range"] { flex: 1; }
+  .multi-list {
+    background: #fafbfd; border: 1px solid var(--border);
+    border-radius: 6px; padding: 8px; max-height: 120px; overflow-y: auto;
+  }
+  .multi-list label {
+    display: flex; align-items: center; gap: 6px; margin: 0;
+    font-size: 12px; color: var(--text); padding: 3px 0; cursor: pointer; font-weight: normal;
+  }
+
+  .doc-tile {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 8px; padding: 12px; display: flex; gap: 10px; align-items: flex-start;
+  }
+  .doc-tile .icon {
+    width: 32px; height: 32px; border-radius: 6px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; flex-shrink: 0; color: white; font-weight: 600;
+  }
+  .doc-tile .meta { flex: 1; }
+  .doc-tile .meta .name { font-weight: 600; font-size: 13px; }
+  .doc-tile .meta .desc { color: var(--muted); font-size: 11px; margin-top: 2px; }
+  .doc-tile a { font-size: 11px; word-break: break-all; }
+
+  table.tasks { width: 100%; border-collapse: collapse; font-size: 12px; }
+  table.tasks th, table.tasks td {
+    padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--border);
+    color: var(--text);
+  }
+  table.tasks thead { background: #f4f6fb; }
+  table.tasks thead tr { background: #f4f6fb; }
+  table.tasks th {
+    background: #f4f6fb;
+    color: var(--text-2);
+    font-weight: 600;
+    border-bottom: 2px solid var(--border-strong);
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.3px;
+  }
+  table.tasks tbody tr:hover { background: #f4f6fb; }
+  table.tasks tr.blocked-row { background: #fde2e2 !important; }
+  table.tasks tr.blocked-row:hover { background: #fbcccc !important; }
+  table.tasks td .progress-bar {
+    width: 80px; height: 6px; background: var(--panel-2); border-radius: 3px; overflow: hidden;
+  }
+  table.tasks td .progress-bar .fill {
+    height: 100%; background: linear-gradient(90deg, var(--accent), var(--ok));
+  }
+
+  .pill {
+    display: inline-block; padding: 2px 7px; border-radius: 10px;
+    font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px;
+  }
+  .pill.development { background: #e0e7ff; color: #2a4ad9; }
+  .pill.bv1, .pill.bv2, .pill.bv3 { background: #fff7e0; color: #b07c00; }
+  .pill.iv { background: #f3e0fa; color: #7b2a91; }
+  .pill.hv { background: #e0eefc; color: #155a9f; }
+  .pill.sv { background: #d8f5ea; color: #086a4f; }
+  .pill.release { background: #d3f9d8; color: #0e7332; }
+  .pill.blocked { background: #fde2e2; color: #b3252d; }
+
+  details summary { cursor: pointer; padding: 4px 0; font-weight: 600; color: var(--text); }
+  .help { color: var(--muted); font-size: 11px; margin-top: 6px; }
+
+  #tip {
+    position: fixed; z-index: 200; background: #1a1f36; color: #ffffff;
+    padding: 7px 10px; border-radius: 6px; font-size: 11px;
+    pointer-events: none; display: none; max-width: 280px;
+    box-shadow: var(--shadow-lg);
+  }
+  #tip b { color: #ffd43b; }
+</style>
+</head>
+<body>
+<header class="app-header">
+  <div class="title">
+    <div class="logo">L3</div>
+    <div>
+      <h1>Log360 SOAR — Release Tracker</h1>
+      <div class="sub">Playbook Builder · Summary · Library · Association · OOB</div>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn" onclick="exportJSON()">Export</button>
+    <button class="btn" onclick="importJSON()">Import</button>
+    <button class="btn" onclick="resetData()">Reset</button>
+    <button class="btn primary" onclick="openTaskModal()">+ Task</button>
+  </div>
+</header>
+
+<div class="release-bar" id="release-bar">
+  <span class="rt-icon">🎯</span>
+  <div>
+    <div class="rt-label">Release Target</div>
+    <div class="rt-date" onclick="editReleaseTarget()" id="rt-date">—</div>
+  </div>
+  <div class="rt-countdown" id="rt-countdown">—</div>
+  <div class="rt-progress" title="Project elapsed %"><div class="fill" id="rt-progress-fill" style="width:0%"></div></div>
+  <span class="rt-progress-pct" id="rt-progress-pct">—</span>
+  <div class="rt-note" id="rt-note" style="flex-basis:100%"></div>
+</div>
+
+<nav class="tabs">
+  <button data-tab="overview" class="active">Overview</button>
+  <button data-tab="devstatus">Development Status</button>
+  <button data-tab="pm">Project Management</button>
+  <button data-tab="tasks">Tasks</button>
+  <button data-tab="deps">Dependencies</button>
+  <button data-tab="docs">Design Docs</button>
+</nav>
+
+<main>
+  <!-- OVERVIEW -->
+  <section id="tab-overview" class="tab-pane">
+    <div class="grid cols-4" style="margin-bottom:16px">
+      <div class="stat-card">
+        <div class="stat-label">Total Tasks</div>
+        <div class="stat-value" id="stat-total">0</div>
+        <div class="stat-sub">across modules</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Dev Completion</div>
+        <div class="stat-value" id="stat-progress">0%</div>
+        <div class="stat-sub">average progress</div>
+      </div>
+      <div class="stat-card bad">
+        <div class="stat-label">Blocked</div>
+        <div class="stat-value" id="stat-blocked">0</div>
+        <div class="stat-sub">items blocked by deps</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Target Release</div>
+        <div class="stat-value" id="stat-release">—</div>
+        <div class="stat-sub" id="stat-release-sub">latest release task</div>
+      </div>
+    </div>
+
+    <div class="grid cols-2">
+      <div class="card">
+        <h2><span class="dot"></span> Project Information</h2>
+        <div class="row"><span class="label">Project</span><span><strong>Log360 SOAR</strong></span></div>
+        <div class="row"><span class="label">Manager</span><span><span class="avatar tmani">TM</span>T Mani</span></div>
+        <div class="row"><span class="label">Lead</span><span><span class="avatar vishnu">VP</span>Vishnu Prasath</span></div>
+        <div class="row"><span class="label">Modules</span><span>5 (Builder, Summary, Library, Association, OOB)</span></div>
+        <div class="row"><span class="label">Sub-modules</span><span>9</span></div>
+        <div class="row"><span class="label">Pipeline</span><span>Dev → BV1 → BV2 → CV → Mkt → Auto → BV3 → SR → ADS → LZ → ITS → Release</span></div>
+      </div>
+
+      <div class="card">
+        <h2><span class="dot" style="background:var(--ok)"></span> Team</h2>
+        <div class="row"><span><span class="avatar tmani">TM</span>T Mani</span><span class="chip">Manager</span></div>
+        <div class="row"><span><span class="avatar vishnu">VP</span>Vishnu Prasath</span><span class="chip info">Lead</span></div>
+        <div class="row"><span><span class="avatar karthik">KG</span>Karthikeyan Ganesh</span><span class="chip">Developer</span></div>
+        <div class="row"><span><span class="avatar kannan">KM</span>Kannan M</span><span class="chip">Developer</span></div>
+        <div class="row"><span><span class="avatar shivraj">SK</span>Shivraj K R</span><span class="chip">Developer</span></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h2><span class="dot" style="background:var(--accent-2)"></span> Modules &amp; Sub-modules</h2>
+      <div id="module-tree"></div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h2><span class="dot" style="background:var(--warn)"></span> External Dependencies</h2>
+      <div id="dep-list"></div>
+      <p class="help">External team deliveries that gate development. Manage details on the Dependencies tab.</p>
+    </div>
+  </section>
+
+  <!-- DEVELOPMENT STATUS (formerly Gantt Chart) -->
+  <section id="tab-devstatus" class="tab-pane" style="display:none">
+    <div class="gantt-toolbar">
+      <label>Group by:</label>
+      <select id="filter-groupby">
+        <option value="phase" selected>Phase (Development, BV1, BV2…)</option>
+        <option value="module">Module (Builder, Summary…)</option>
+      </select>
+      <label>Developer:</label>
+      <select id="filter-dev"><option value="">All</option></select>
+      <label>Module:</label>
+      <select id="filter-mod"><option value="">All</option></select>
+      <label>Phase:</label>
+      <select id="filter-phase">
+        <option value="">All</option>
+        <option>Development</option><option>BV1</option><option>BV2</option><option>BV3</option>
+        <option>IV</option><option>HV</option><option>SV</option><option>Release</option>
+      </select>
+      <label><input type="checkbox" id="filter-blocked-only" /> Blocked only</label>
+      <label>Zoom:</label>
+      <select id="filter-zoom">
+        <option value="14">Compact</option>
+        <option value="7" selected>Weekly</option>
+        <option value="3">Detailed</option>
+      </select>
+      <span style="flex:1"></span>
+      <button class="btn" onclick="scrollGanttToToday('devstatus-scroll')">Go to Today</button>
+    </div>
+
+    <div class="gantt-wrapper">
+      <div class="gantt-scroll" id="devstatus-scroll">
+        <div class="gantt-table" id="devstatus-table"></div>
+      </div>
+      <div class="legend">
+        <strong style="margin-right:4px">Progress:</strong>
+        <div class="item"><div class="swatch" style="background:#12b886"></div>100%</div>
+        <div class="item"><div class="swatch" style="background:#51cf66"></div>75–99%</div>
+        <div class="item"><div class="swatch" style="background:#f59f00"></div>50–74%</div>
+        <div class="item"><div class="swatch" style="background:#e8590c"></div>25–49%</div>
+        <div class="item"><div class="swatch" style="background:#fa5252"></div>1–24%</div>
+        <div class="item"><div class="swatch" style="background:#e03131"></div>0%</div>
+        <div class="item"><div class="swatch" style="background:repeating-linear-gradient(45deg,#e03131 0,#e03131 5px,#b62525 5px,#b62525 10px)"></div>Blocked</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROJECT MANAGEMENT -->
+  <section id="tab-pm" class="tab-pane" style="display:none">
+    <div class="gantt-toolbar">
+      <label>View:</label>
+      <select id="pm-view">
+        <option value="all" selected>All Tasks</option>
+        <option value="blocked">Blocked Only</option>
+        <option value="active">Active &amp; Upcoming</option>
+      </select>
+      <label>Phase:</label>
+      <select id="pm-phase-filter"><option value="">All</option></select>
+      <label>Zoom:</label>
+      <select id="pm-zoom">
+        <option value="month">Month</option>
+        <option value="week" selected>Week</option>
+        <option value="day">Day</option>
+        <option value="half">Half Day</option>
+        <option value="quarter">Quarter Day</option>
+      </select>
+      <span style="flex:1"></span>
+      <span id="pm-summary" style="font-size:12px; color:var(--muted)"></span>
+      <button class="btn" onclick="scrollGanttToToday('pm-scroll')">Go to Today</button>
+    </div>
+
+    <div class="gantt-wrapper">
+      <div class="gantt-scroll" id="pm-scroll">
+        <div class="gantt-table" id="pm-table"></div>
+      </div>
+      <div class="legend">
+        <div class="item"><div class="swatch" style="background:#2d3548"></div>Parent group</div>
+        <div class="item"><div class="swatch" style="background:#2ecc71"></div>On time</div>
+        <div class="item"><div class="swatch" style="background:#e74c3c"></div>Late</div>
+        <div class="item"><div class="swatch" style="background:#4dabf7"></div>Upcoming</div>
+        <div class="item"><div class="swatch" style="background:#e03131;border:2px solid #ffd43b"></div>Milestone</div>
+        <div class="item"><div class="swatch" style="background:repeating-linear-gradient(45deg,#e03131 0,#e03131 5px,#b62525 5px,#b62525 10px)"></div>Blocked</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TASKS -->
+  <section id="tab-tasks" class="tab-pane" style="display:none">
+    <div class="gantt-toolbar">
+      <label>Search:</label>
+      <input id="task-search" placeholder="Search tasks…" style="min-width:240px" />
+      <label>Developer:</label>
+      <select id="task-filter-dev"><option value="">All</option></select>
+      <label>Phase:</label>
+      <select id="task-filter-phase">
+        <option value="">All</option>
+        <option>Development</option><option>BV1</option><option>BV2</option><option>BV3</option>
+        <option>IV</option><option>HV</option><option>SV</option><option>Release</option>
+      </select>
+      <label><input type="checkbox" id="task-filter-blocked" /> Blocked only</label>
+      <span style="flex:1"></span>
+      <button class="btn primary" onclick="openTaskModal()">+ Add Task</button>
+    </div>
+    <div class="card" style="padding:0; overflow-x:auto">
+      <table class="tasks" id="tasks-table">
+        <thead>
+          <tr>
+            <th>Task</th><th>Module</th><th>Assignee</th>
+            <th>Phase</th><th>Start</th><th>End</th>
+            <th>Progress</th><th>Blocked By</th><th></th>
+          </tr>
+        </thead>
+        <tbody id="tasks-tbody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- DEPENDENCIES -->
+  <section id="tab-deps" class="tab-pane" style="display:none">
+    <div class="gantt-toolbar">
+      <label>Status:</label>
+      <select id="dep-filter-status">
+        <option value="">All</option>
+        <option value="delivered">Delivered</option>
+        <option value="pending">Pending</option>
+        <option value="noprogress">No Progress</option>
+        <option value="notstarted">Not Started</option>
+      </select>
+      <span style="flex:1"></span>
+      <button class="btn primary" onclick="openDepModal()">+ Add Dependency</button>
+    </div>
+    <div class="card" style="padding:0; overflow-x:auto">
+      <table class="tasks" id="deps-table">
+        <thead>
+          <tr>
+            <th>Dependency</th>
+            <th>Team</th>
+            <th>Status</th>
+            <th>Due</th>
+            <th>Notes</th>
+            <th>Blocks (tasks)</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="deps-tbody"></tbody>
+      </table>
+    </div>
+    <p class="help" style="margin-top:10px">
+      When a task lists a dependency in the "Blocked By" field and that dependency status is anything other than <b>Delivered</b>, the task is automatically marked as blocked across the tracker (Tasks, Development Status, Project Management).
+    </p>
+  </section>
+
+  <!-- DOCS -->
+  <section id="tab-docs" class="tab-pane" style="display:none">
+    <div class="card">
+      <h2><span class="dot"></span> Schema Design</h2>
+      <div class="doc-tile">
+        <div class="icon">SD</div>
+        <div class="meta">
+          <div class="name">OP Playbook · FW Runnable Relationship</div>
+          <div class="desc">Database schema and ORM relationships for playbook execution.</div>
+          <a href="https://learn.zoho.in/portal/zohocorp/knowledge/manual/log360-soar/article/op-playbook-fwrunnable-relationship" target="_blank">Open document →</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h2><span class="dot" style="background:var(--accent-2)"></span> High-Level Design (HLD)</h2>
+      <div class="grid cols-2">
+        <div class="doc-tile">
+          <div class="icon">PE</div>
+          <div class="meta">
+            <div class="name">Playbook Execution Architecture</div>
+            <div class="desc">Execution flow, runnable lifecycle, FW interaction.</div>
+            <a href="https://learn.zoho.in/portal/zohocorp/knowledge/manual/log360-soar/article/architecture-1" target="_blank">Open document →</a>
+          </div>
+        </div>
+        <div class="doc-tile">
+          <div class="icon">PL</div>
+          <div class="meta">
+            <div class="name">Playbook Library</div>
+            <div class="desc">Library structure, OP importer, marketplace flow.</div>
+            <a href="https://learn.zoho.in/portal/zohocorp/knowledge/manual/log360-soar/article/playbook-library-2" target="_blank">Open document →</a>
+          </div>
+        </div>
+        <div class="doc-tile">
+          <div class="icon">MV</div>
+          <div class="meta">
+            <div class="name">Playbook Macro Value Parser</div>
+            <div class="desc">Input macros, parser design, value resolution.</div>
+            <a href="https://learn.zoho.in/portal/zohocorp/knowledge/manual/log360-soar/article/input-macros" target="_blank">Open document →</a>
+          </div>
+        </div>
+        <div class="doc-tile">
+          <div class="icon">CF</div>
+          <div class="meta">
+            <div class="name">Custom Functions SDK APIs</div>
+            <div class="desc">SDK contracts for custom function development.</div>
+            <a href="https://learn.zoho.in/portal/zohocorp/knowledge/manual/log360-soar/article/custom-functions" target="_blank">Open document →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h2><span class="dot" style="background:var(--ok)"></span> Product Documents</h2>
+      <div class="grid cols-2">
+        <div class="doc-tile">
+          <div class="icon">PRD</div>
+          <div class="meta">
+            <div class="name">Product Requirements Document</div>
+            <div class="desc">Functional &amp; non-functional requirements.</div>
+            <a href="https://learn.zoho.in/portal/zohocorp/knowledge/manual/log360-soar/article/prd-1" target="_blank">Open document →</a>
+          </div>
+        </div>
+        <div class="doc-tile">
+          <div class="icon">HF</div>
+          <div class="meta">
+            <div class="name">Hi-Fi Prototype</div>
+            <div class="desc">High-fidelity UI/UX prototype reference.</div>
+            <a href="https://learn.zoho.in/portal/zohocorp/knowledge/manual/log360-soar/article/hifi" target="_blank">Open document →</a>
+          </div>
+        </div>
+        <div class="doc-tile">
+          <div class="icon">SY</div>
+          <div class="meta">
+            <div class="name">System Design (WSM Scalability)</div>
+            <div class="desc">Scalability enhancements and system architecture.</div>
+            <a href="https://learn.zoho.in/portal/zohocorp/manual/wsm-scalability-enhancements/article/system-design" target="_blank">Open document →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- Task Modal -->
+<div class="modal-bg" id="task-modal">
+  <div class="modal">
+    <h3 id="modal-title">Add Task</h3>
+    <input type="hidden" id="task-id" />
+    <label>Task Name</label>
+    <input id="task-name" />
+    <div class="row2">
+      <div><label>Module</label><select id="task-module"></select></div>
+      <div><label>Assignee</label><select id="task-assignee"></select></div>
+    </div>
+    <div class="row2">
+      <div>
+        <label>Phase</label>
+        <select id="task-phase">
+          <option>Development</option>
+          <option>BV1</option><option>BV2</option><option>BV3</option>
+          <option>IV</option><option>HV</option><option>SV</option><option>Release</option>
+        </select>
+      </div>
+      <div>
+        <label>Progress</label>
+        <div class="progress-input">
+          <input type="range" id="task-progress" min="0" max="100" value="0" />
+          <span id="task-progress-val">0%</span>
+        </div>
+      </div>
+    </div>
+    <div class="row2">
+      <div><label>Start Date</label><input type="date" id="task-start" /></div>
+      <div><label>End Date</label><input type="date" id="task-end" /></div>
+    </div>
+    <label>Blocked By (dependencies)</label>
+    <div class="multi-list" id="task-blocked-by"></div>
+    <label>Notes</label>
+    <textarea id="task-notes"></textarea>
+    <div class="actions">
+      <button class="btn danger" id="btn-delete" style="display:none" onclick="deleteTask()">Delete</button>
+      <button class="btn" onclick="closeTaskModal()">Cancel</button>
+      <button class="btn primary" onclick="saveTask()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Dependency Modal -->
+<div class="modal-bg" id="dep-modal">
+  <div class="modal">
+    <h3 id="dep-modal-title">Add Dependency</h3>
+    <input type="hidden" id="dep-id-hidden" />
+    <label>Dependency Name</label>
+    <input id="dep-name" />
+    <div class="row2">
+      <div>
+        <label>Team</label>
+        <input id="dep-team" placeholder="e.g. Custom Functions team" />
+      </div>
+      <div>
+        <label>Status</label>
+        <select id="dep-status">
+          <option value="delivered">Delivered</option>
+          <option value="pending">Pending</option>
+          <option value="noprogress">No Progress</option>
+          <option value="notstarted">Not Started</option>
+        </select>
+      </div>
+    </div>
+    <label>Due Date</label>
+    <input type="date" id="dep-due" />
+    <label>Notes</label>
+    <textarea id="dep-notes"></textarea>
+    <div class="actions">
+      <button class="btn danger" id="dep-btn-delete" style="display:none" onclick="deleteDep()">Delete</button>
+      <button class="btn" onclick="closeDepModal()">Cancel</button>
+      <button class="btn primary" onclick="saveDep()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div id="tip"></div>
+
+<script>
+/* ============================================================
+   Log360 SOAR — Release Tracker
+   Storage key: log360_soar_tracker_v6
+   ============================================================ */
+const STORAGE_KEY = 'log360_soar_tracker_v7'; // dep due dates assumed 1-Jul-2026
+const PROJECT_START = '2026-05-20';
+const DEFAULT_RELEASE_TARGET = '2026-12-15';
+const RELEASE_BUFFER_DAYS = 90; // days from "last dependency received" → release
+
+const TEAM = {
+  'karthik':  { name: 'Karthikeyan Ganesh', email: 'karthikeyan.gp@zohocorp.com', role: 'Developer', cls: 'karthik' },
+  'kannan':   { name: 'Kannan M',           email: 'kannan.mk@zohocorp.com',     role: 'Developer', cls: 'kannan' },
+  'shivraj':  { name: 'Shivraj K R',        email: 'shivraj.kr@zohocorp.com',    role: 'Developer', cls: 'shivraj' },
+  'vishnu':   { name: 'Vishnu Prasath',     email: 'vishnu.prasath@zohocorp.com',role: 'Lead',      cls: 'vishnu' },
+  'tmani':    { name: 'T Mani',             email: 'tmani@zohocorp.com',         role: 'Manager',   cls: 'tmani' },
+  'shared':   { name: 'Shared (Kannan & Shivraj)', email: '', role: 'Developers', cls: 'shared' }
+};
+
+const MODULES = [
+  { id: 'builder', name: 'Playbook Builder', owner: 'karthik',
+    submodules: [
+      { id: 'flow',  name: 'Flow Controls',       owner: 'karthik', devProgress: 100 },
+      { id: 'io',    name: 'I/O',                 owner: 'shared',  devProgress: 50, blockedBy: ['mp'] },
+      { id: 'macro', name: 'Macro Value Parser',  owner: 'shivraj', devProgress: 100 }
+    ]},
+  { id: 'summary', name: 'Playbook Summary', owner: 'kannan',
+    submodules: [
+      { id: 'tableview', name: 'Manage Playbook Table view',          owner: 'kannan', devProgress: 80  },
+      { id: 'exec',      name: 'Playbook execution view (Qntrl-like)', owner: 'kannan', devProgress: 50, blockedBy: ['cl'] },
+      { id: 'audit',     name: 'Playbook Audit Logs index ES',         owner: 'kannan', devProgress: 100 }
+    ]},
+  { id: 'library', name: 'Playbook Library', owner: 'shivraj',
+    submodules: [
+      { id: 'opimport', name: 'OP Playbook Importer', owner: 'shivraj', devProgress: 70, blockedBy: ['mp'] }
+    ]},
+  { id: 'association', name: 'Playbook Association', owner: 'kannan',
+    submodules: [
+      { id: 'grouping', name: 'Alert / Incident / Log / Evidence grouping', owner: 'kannan', devProgress: 0 }
+    ]},
+  { id: 'oobbuild', name: '60 Playbook Build', owner: 'shared',
+    submodules: [
+      { id: 'odcfexec', name: 'OD Custom functions script execute in OP', owner: 'shared', devProgress: 0, blockedBy: ['dc'] }
+    ]}
+];
+
+const DEFAULT_DEPENDENCIES = [
+  { id: 'cf', name: 'Custom Functions',       team: 'Custom Functions team',  status: 'delivered',  due: '2026-04-30', notes: 'Delivered ✓' },
+  { id: 'dc', name: 'Deluge Connections',     team: 'Deluge team',            status: 'pending',    due: '2026-07-01', notes: 'Expected by 1-Jul' },
+  { id: 'cl', name: 'Client',                 team: 'Client team',            status: 'noprogress', due: '2026-07-01', notes: 'Expected by 1-Jul' },
+  { id: 'mp', name: 'Marketplace deliveries', team: 'Marketplace team',       status: 'notstarted', due: '2026-07-01', notes: 'Expected by 1-Jul' }
+];
+
+const PHASE_DURATIONS = {
+  'Development': 28, 'BV1': 7, 'BV2': 7, 'BV3': 7, 'IV': 7, 'HV': 7, 'SV': 5, 'Release': 3
+};
+const PHASE_ORDER = ['Development','BV1','BV2','BV3','IV','HV','SV','Release'];
+
+/* Project Management pipeline (sequential, project-wide) */
+const PM_PHASES = [
+  { id: 'bv1',        name: 'BV1',                       cls: 'bv',        subs: [
+      { name: 'BV1 Internal Validation', dur: 5 },
+      { name: 'BV1 Validation',          dur: 5 },
+      { name: 'BV1 Completion',          dur: 3 },
+      { name: 'BV1 Issue Fixes',         dur: 5 }
+  ]},
+  { id: 'bv2',        name: 'BV2',                       cls: 'bv',        subs: [
+      { name: 'Reverse Merges',                 dur: 3 },
+      { name: 'BV2 Build',                      dur: 2 },
+      { name: 'BV2 Internal Validation',        dur: 5 },
+      { name: 'BV2 Validation',                 dur: 5 },
+      { name: 'BV2 Validation Completion',      dur: 3 }
+  ]},
+  { id: 'cv',         name: 'Compatibility Validation',  cls: 'cv',        subs: [
+      { name: 'Reverse Merges',                 dur: 3 },
+      { name: 'CV1 Build',                      dur: 2 },
+      { name: 'CV1 Internal Validation',        dur: 5 },
+      { name: 'CV1 Validation',                 dur: 5 },
+      { name: 'CV1 Validation Completion',      dur: 3 },
+      { name: 'CV1 Issue Fixes',                dur: 5 }
+  ]},
+  { id: 'marketing',  name: 'Marketing',                 cls: 'mkt',       subs: [
+      { name: 'Help Document',                  dur: 5 },
+      { name: 'Translation Keys update',        dur: 3 }
+  ]},
+  { id: 'automation', name: 'Automation',                cls: 'auto',      subs: [
+      { name: 'Automation Setup',               dur: 7 }
+  ]},
+  { id: 'bv3',        name: 'BV3',                       cls: 'bv',        subs: [
+      { name: 'Reverse Merges',                 dur: 3 },
+      { name: 'BV3 Build',                      dur: 2 },
+      { name: 'BV3 Internal Cross Validation',  dur: 5 },
+      { name: 'BV3 Validation',                 dur: 5 },
+      { name: 'BV3 Internal Completion',        dur: 3 },
+      { name: 'BV3 Issue Fixes',                dur: 5 }
+  ]},
+  { id: 'security',   name: 'Security Review',           cls: 'sec',       subs: [
+      { name: 'DPIA',         dur: 5 },
+      { name: 'Code Review',  dur: 5 }
+  ]},
+  { id: 'ads',        name: 'ADS Milestone',             cls: 'milestone', subs: [
+      { name: 'ADS Milestone', dur: 2, milestone: true }
+  ]},
+  { id: 'localzoho',  name: 'Local Zoho',                cls: 'localzoho', subs: [
+      { name: 'Local Zoho Migration',                     dur: 5 },
+      { name: 'Main Grid Validation (features & pre-release)', dur: 7 },
+      { name: 'Main Grid Issue Fixes',                    dur: 5 }
+  ]},
+  { id: 'its',        name: 'ITS Milestone',             cls: 'milestone', subs: [
+      { name: 'ITS Milestone', dur: 2, milestone: true }
+  ]},
+  { id: 'release',    name: 'Release',                   cls: 'release',   subs: [
+      { name: 'Pre-release Build',         dur: 2 },
+      { name: 'Live Migration',            dur: 2 },
+      { name: 'Pre-grid Validation',       dur: 5 },
+      { name: 'Pre-grid Issue Fixes',      dur: 3 },
+      { name: 'Milestone Movement (GA)',   dur: 1, milestone: true }
+  ]}
+];
+
+function addDays(d, n) { const x = new Date(d); x.setDate(x.getDate() + n); return x; }
+function dateStr(d) { if (typeof d === 'string') d = new Date(d); return d.toISOString().slice(0,10); }
+function daysBetween(a,b) { return Math.round((new Date(b) - new Date(a)) / 86400000); }
+function initials(name) { return (name||'').split(/\s+/).map(p=>p[0]).slice(0,2).join('').toUpperCase(); }
+function escapeHTML(s) { return (s||'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+function generateDefaultTasks() {
+  const tasks = []; let nextId = 1;
+  const baseStart = new Date(PROJECT_START);
+
+  // External dependency rows (rendered in dev gantt for visibility)
+  let depStart = new Date('2026-04-15');
+  DEFAULT_DEPENDENCIES.forEach(d => {
+    tasks.push({
+      id: nextId++,
+      name: d.name,
+      module: 'dependencies',
+      subId: d.id,
+      assignee: 'External',
+      phase: 'Dependency',
+      start: dateStr(depStart),
+      end: d.due || dateStr(addDays(depStart, 21)),
+      progress: d.status === 'delivered' ? 100 : (d.status === 'pending' ? 25 : 0),
+      blockedBy: [],
+      notes: d.notes, kind: 'dep'
+    });
+    depStart = addDays(depStart, 3);
+  });
+
+  MODULES.forEach((mod, mi) => {
+    mod.submodules.forEach((sub, si) => {
+      const stagger = mi * 5 + si * 3;
+      let cursor = addDays(baseStart, stagger);
+      let prevId = null;
+      PHASE_ORDER.forEach(ph => {
+        const dur = PHASE_DURATIONS[ph];
+        const end = addDays(cursor, dur);
+        const phaseProgress = (ph === 'Development' && typeof sub.devProgress === 'number') ? sub.devProgress : 0;
+        const t = {
+          id: nextId++,
+          name: sub.name,
+          module: mod.id, subId: sub.id,
+          assignee: sub.owner,
+          phase: ph,
+          start: dateStr(cursor),
+          end: dateStr(end),
+          progress: phaseProgress,
+          blockedBy: (ph === 'Development' && sub.blockedBy) ? sub.blockedBy.slice() : [],
+          notes: '', kind: 'task'
+        };
+        tasks.push(t);
+        prevId = t.id;
+        cursor = end;
+      });
+    });
+  });
+  return tasks;
+}
+
+function generatePmTasks() {
+  const tasks = []; let nextId = 1;
+  // PM starts when most dev tasks are reaching completion. Anchor: 2026-08-15
+  let cursor = new Date('2026-08-15');
+  PM_PHASES.forEach(ph => {
+    ph.subs.forEach(s => {
+      const end = addDays(cursor, s.dur);
+      const t = {
+        id: nextId++,
+        phaseId: ph.id,
+        phaseName: ph.name,
+        cls: ph.cls,
+        name: s.name,
+        start: dateStr(cursor),
+        end: dateStr(end),
+        progress: 0,
+        milestone: !!s.milestone,
+        blockedBy: [],
+        blockedByTasks: []
+      };
+      tasks.push(t);
+      cursor = end;
+    });
+  });
+
+  // Mark some default blocks based on undelivered dependencies & pending dev modules:
+  // Anything in BV1 / BV2 / CV / etc. is blocked while:
+  //  - "Alert / Incident / Log / Evidence grouping" dev = 0%  (blocks BV1)
+  //  - Marketplace dep not delivered (blocks Marketing tasks)
+  //  - Deluge dep not delivered (blocks CV)
+  //  - Client dep no-progress (blocks Local Zoho)
+  tasks.forEach(t => {
+    if (t.phaseId === 'bv1') t.blockedByTasks.push('grouping-dev');
+    if (t.phaseId === 'marketing') t.blockedBy.push('mp');
+    if (t.phaseId === 'cv') t.blockedBy.push('dc');
+    if (t.phaseId === 'localzoho') t.blockedBy.push('cl');
+  });
+
+  return tasks;
+}
+
+let state = loadState();
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const s = JSON.parse(raw);
+      if (s.tasks && s.dependencies && s.pmTasks) {
+        if (!s.releaseTarget) s.releaseTarget = DEFAULT_RELEASE_TARGET;
+        return s;
+      }
+    }
+  } catch(e) { console.warn(e); }
+  return {
+    tasks: generateDefaultTasks(),
+    pmTasks: generatePmTasks(),
+    dependencies: DEFAULT_DEPENDENCIES.map(d => ({...d})),
+    releaseTarget: DEFAULT_RELEASE_TARGET
+  };
+}
+function saveState() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e){} }
+function nextTaskId() { return Math.max(0, ...state.tasks.map(t=>t.id)) + 1; }
+function nextDepId() {
+  const ids = state.dependencies.map(d => parseInt((d.id||'').replace(/[^0-9]/g,''),10)).filter(n=>!isNaN(n));
+  return 'd' + (Math.max(0, ...ids, 100) + 1);
+}
+
+/* ===== Blocked status helpers ===== */
+function depById(id) { return state.dependencies.find(d => d.id === id); }
+function isTaskBlocked(t) {
+  if (!t || t.kind === 'dep') return false;
+  if (t.progress >= 100) return false;
+  if (!t.blockedBy || !t.blockedBy.length) return false;
+  return t.blockedBy.some(id => {
+    const d = depById(id);
+    return d && d.status !== 'delivered';
+  });
+}
+function findDevTaskByRef(ref) {
+  // ref format: '<subId>-dev' to find the Development row for that submodule
+  if (typeof ref !== 'string') return null;
+  if (ref.endsWith('-dev')) {
+    const sub = ref.slice(0, -4);
+    return state.tasks.find(t => t.subId === sub && t.phase === 'Development');
+  }
+  // numeric id
+  const id = parseInt(ref, 10);
+  if (!isNaN(id)) return state.tasks.find(t => t.id === id);
+  return null;
+}
+function isPmBlocked(pt) {
+  if (pt.progress >= 100) return false;
+  if ((pt.blockedBy||[]).some(id => {
+    const d = depById(id);
+    return d && d.status !== 'delivered';
+  })) return true;
+  if ((pt.blockedByTasks||[]).some(ref => {
+    const t = findDevTaskByRef(ref);
+    return t && (t.progress||0) < 100;
+  })) return true;
+  return false;
+}
+function isPmLate(pt) {
+  const today = new Date(PROJECT_START);
+  return (pt.progress||0) < 100 && new Date(pt.end) < today;
+}
+function pmTaskState(pt) {
+  if (isPmBlocked(pt)) return 'blocked';
+  if (isPmLate(pt)) return 'late';
+  const today = new Date(PROJECT_START);
+  if (new Date(pt.start) > today && (pt.progress||0) === 0) return 'upcoming';
+  return 'ontime';
+}
+function fmtShortDate(d) {
+  const dt = new Date(d);
+  return dt.toLocaleDateString('en-US',{month:'short', day:'numeric'}).replace(' ', '-');
+}
+function reasonsBlocked(t, kind) {
+  const reasons = [];
+  (t.blockedBy||[]).forEach(id => {
+    const d = depById(id);
+    if (d && d.status !== 'delivered') reasons.push(`Dep: ${d.name} (${labelForDepStatus(d.status)})`);
+  });
+  if (kind === 'pm') {
+    (t.blockedByTasks||[]).forEach(ref => {
+      const tt = findDevTaskByRef(ref);
+      if (tt && (tt.progress||0) < 100) reasons.push(`Dev task: ${tt.name} (${tt.progress||0}%)`);
+    });
+  }
+  return reasons;
+}
+function labelForDepStatus(s) {
+  return ({delivered:'Delivered', pending:'Pending', noprogress:'No Progress', notstarted:'Not Started'})[s] || s;
+}
+
+/* ===== Release Target ===== */
+function fmtNiceDate(d) {
+  if (!d) return '—';
+  const dt = new Date(d);
+  return dt.toLocaleDateString('en-US',{month:'short', day:'numeric', year:'numeric'});
+}
+
+/* Auto-computed release target:
+   - Anchor = the latest delivery date among dependencies
+       * if a dep is delivered → use its `due` (best proxy for when it landed)
+       * if not delivered → use its `due` (expected delivery)
+   - Result = latest(anchor) + RELEASE_BUFFER_DAYS (90)
+   So once every dep is delivered, the release window shrinks to 90 days from the
+   last delivery date. */
+function computeAutoRelease() {
+  const today = new Date(PROJECT_START);
+  let anchor = today;
+  const allDelivered = state.dependencies.length > 0 && state.dependencies.every(d => d.status === 'delivered');
+  if (allDelivered) {
+    // Everyone is in → start the 90-day clock from today
+    anchor = today;
+  } else {
+    // Some pending → 90 days from the latest expected due date among undelivered deps
+    const undelivered = state.dependencies.filter(d => d.status !== 'delivered' && d.due);
+    if (undelivered.length) {
+      anchor = undelivered.reduce(
+        (max, d) => new Date(d.due) > max ? new Date(d.due) : max,
+        new Date(undelivered[0].due)
+      );
+    }
+  }
+  return dateStr(addDays(anchor, RELEASE_BUFFER_DAYS));
+}
+
+function depsSummary() {
+  const total = state.dependencies.length;
+  const delivered = state.dependencies.filter(d => d.status === 'delivered').length;
+  return { total, delivered, pending: total - delivered };
+}
+
+function renderReleaseBar() {
+  // Decide which date to show: auto (default) vs manual override
+  const mode = state.releaseTargetMode || 'auto';
+  const auto = computeAutoRelease();
+  const target = (mode === 'manual' && state.releaseTarget) ? state.releaseTarget : auto;
+
+  document.getElementById('rt-date').textContent = fmtNiceDate(target);
+
+  const today = new Date(PROJECT_START);
+  const days = daysBetween(today, new Date(target));
+  const cd = document.getElementById('rt-countdown');
+  if (days < 0) {
+    cd.textContent = Math.abs(days) + ' days overdue';
+    cd.className = 'rt-countdown bad';
+  } else if (days <= 30) {
+    cd.textContent = days + ' days remaining';
+    cd.className = 'rt-countdown warn';
+  } else {
+    cd.textContent = days + ' days remaining';
+    cd.className = 'rt-countdown';
+  }
+
+  // progress: % of dev tasks completed
+  const tasks = state.tasks.filter(x => x.kind === 'task');
+  const avg = tasks.length ? Math.round(tasks.reduce((s,x)=>s+(x.progress||0),0)/tasks.length) : 0;
+  document.getElementById('rt-progress-fill').style.width = avg + '%';
+  document.getElementById('rt-progress-pct').textContent = avg + '% complete';
+
+  // Note: explain the 90-day rule and current basis
+  const noteEl = document.getElementById('rt-note');
+  const sm = depsSummary();
+  let noteHTML;
+  if (mode === 'manual') {
+    noteHTML = `<span class="rt-mode-tag manual">Manual</span> · Auto would be <b>${fmtNiceDate(auto)}</b> <a href="#" onclick="resetReleaseAuto();return false;">use auto</a>`;
+  } else if (sm.pending === 0) {
+    noteHTML = `<span class="rt-mode-tag auto">Auto</span> · All ${sm.total} dependencies delivered → ${RELEASE_BUFFER_DAYS} days from today`;
+  } else {
+    noteHTML = `<span class="rt-mode-tag auto">Auto</span> · ${sm.pending}/${sm.total} dependencies pending → release tracks ${RELEASE_BUFFER_DAYS} days after last delivery`;
+  }
+  if (noteEl) noteEl.innerHTML = noteHTML;
+}
+
+function editReleaseTarget() {
+  const el = document.getElementById('rt-date');
+  const auto = computeAutoRelease();
+  const current = (state.releaseTargetMode === 'manual' && state.releaseTarget) ? state.releaseTarget : auto;
+  el.innerHTML = `<input type="date" id="rt-date-input" value="${current}" />`;
+  const inp = document.getElementById('rt-date-input');
+  inp.focus();
+  const save = () => {
+    if (inp.value) {
+      state.releaseTarget = inp.value;
+      state.releaseTargetMode = 'manual';
+      saveState();
+    }
+    renderReleaseBar();
+  };
+  inp.onblur = save;
+  inp.onkeydown = (e) => { if (e.key === 'Enter') inp.blur(); };
+}
+
+function resetReleaseAuto() {
+  state.releaseTargetMode = 'auto';
+  saveState();
+  renderReleaseBar();
+}
+
+/* ===== Tabs ===== */
+document.querySelectorAll('nav.tabs button').forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll('nav.tabs button').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    document.querySelectorAll('.tab-pane').forEach(p => p.style.display='none');
+    document.getElementById('tab-' + b.dataset.tab).style.display='';
+    if (b.dataset.tab === 'overview') renderOverview();
+    if (b.dataset.tab === 'devstatus') renderDevGantt();
+    if (b.dataset.tab === 'pm') renderPmGantt();
+    if (b.dataset.tab === 'tasks') renderTaskTable();
+    if (b.dataset.tab === 'deps') renderDepTable();
+  };
+});
+
+/* ===== Overview ===== */
+function renderOverview() {
+  const tasks = state.tasks.filter(t => t.kind === 'task');
+  document.getElementById('stat-total').textContent = tasks.length;
+  const avg = tasks.length ? Math.round(tasks.reduce((s,t)=>s+(t.progress||0),0)/tasks.length) : 0;
+  document.getElementById('stat-progress').textContent = avg + '%';
+
+  const blocked = state.tasks.filter(isTaskBlocked).length
+                + state.pmTasks.filter(isPmBlocked).length;
+  document.getElementById('stat-blocked').textContent = blocked;
+
+  const releaseTasks = tasks.filter(t => t.phase === 'Release');
+  const latest = releaseTasks.reduce((m,t)=> !m || new Date(t.end)>new Date(m) ? t.end : m, null);
+  document.getElementById('stat-release').textContent = latest || '—';
+
+  const tree = document.getElementById('module-tree');
+  tree.innerHTML = '';
+  MODULES.forEach(mod => {
+    const det = document.createElement('details'); det.open = true;
+    const ownerInfo = TEAM[mod.owner] || {name: mod.owner, cls: ''};
+    det.innerHTML = `<summary><span class="avatar ${ownerInfo.cls}">${initials(ownerInfo.name)}</span> ${mod.name} <span class="chip" style="margin-left:8px">${mod.submodules.length} sub-modules</span> <span class="chip info" style="margin-left:6px">Owner: ${ownerInfo.name}</span></summary>`;
+    const inner = document.createElement('div');
+    inner.style.marginLeft = '20px'; inner.style.marginTop = '6px';
+    mod.submodules.forEach(sub => {
+      const sOwner = TEAM[sub.owner] || {name: sub.owner, cls: 'shared'};
+      const row = document.createElement('div'); row.className = 'row';
+      row.innerHTML = `<span>↳ ${sub.name}</span><span><span class="avatar ${sOwner.cls}">${initials(sOwner.name)}</span>${sOwner.name}</span>`;
+      inner.appendChild(row);
+    });
+    det.appendChild(inner);
+    tree.appendChild(det);
+  });
+
+  const depEl = document.getElementById('dep-list');
+  depEl.innerHTML = '';
+  state.dependencies.forEach(d => {
+    const row = document.createElement('div'); row.className = 'row';
+    const chipCls = d.status === 'delivered' ? 'ok' : d.status === 'pending' ? 'warn' : 'bad';
+    row.innerHTML = `<span><strong>${escapeHTML(d.name)}</strong> <span style="color:var(--muted)">— ${escapeHTML(d.team || '')}${d.notes ? ' · '+escapeHTML(d.notes) : ''}</span></span><span><span class="chip ${chipCls}">${labelForDepStatus(d.status)}</span></span>`;
+    depEl.appendChild(row);
+  });
+}
+
+/* ===== Generic Gantt rendering used by DevStatus and PM ===== */
+function buildTimelineHeader(minD, maxD, width, dayPx) {
+  const wrap = document.createElement('div');
+  wrap.className = 'timeline-header';
+  wrap.style.width = width + 'px';
+  const monthRow = document.createElement('div'); monthRow.className = 'month-row';
+  const weekRow = document.createElement('div'); weekRow.className = 'week-row';
+
+  let cursor = new Date(minD);
+  while (cursor < maxD) {
+    const monthStart = new Date(cursor.getFullYear(), cursor.getMonth(), 1);
+    const monthEnd = new Date(cursor.getFullYear(), cursor.getMonth()+1, 1);
+    const segStart = monthStart < minD ? minD : monthStart;
+    const segEnd = monthEnd > maxD ? maxD : monthEnd;
+    const days = daysBetween(segStart, segEnd);
+    if (days > 0) {
+      const cell = document.createElement('div'); cell.className = 'month-cell';
+      cell.style.width = (days * dayPx) + 'px';
+      cell.textContent = monthStart.toLocaleDateString('en-US',{month:'short',year:'numeric'});
+      monthRow.appendChild(cell);
+    }
+    cursor = new Date(cursor.getFullYear(), cursor.getMonth()+1, 1);
+  }
+
+  let wcur = new Date(minD);
+  while (wcur < maxD) {
+    const next = addDays(wcur, 7);
+    const seg = Math.min(daysBetween(wcur, next), daysBetween(wcur, maxD));
+    const cell = document.createElement('div'); cell.className = 'week-cell';
+    cell.style.width = (seg * dayPx) + 'px';
+    cell.textContent = wcur.toLocaleDateString('en-US',{month:'numeric',day:'numeric'});
+    weekRow.appendChild(cell);
+    wcur = next;
+  }
+  wrap.appendChild(monthRow); wrap.appendChild(weekRow);
+  return wrap;
+}
+
+function scrollGanttToToday(scrollId) {
+  const sc = document.getElementById(scrollId);
+  if (!sc) return;
+  // Find first today line in this scroll container
+  const tl = sc.querySelector('.today-line');
+  if (tl) {
+    const off = parseInt(tl.style.left, 10) || 0;
+    sc.scrollLeft = Math.max(0, off - 200);
+  }
+}
+
+/* ===== Development Status Gantt ===== */
+let devDayPx = 14;
+
+function phaseToClass(phase, kind) {
+  if (kind === 'dep') return 'dep';
+  switch (phase) {
+    case 'Development': return 'dev';
+    case 'BV1': case 'BV2': case 'BV3': return 'bv';
+    case 'IV': return 'iv'; case 'HV': return 'hv';
+    case 'SV': return 'sv'; case 'Release': return 'release';
+    default: return 'dev';
+  }
+}
+function progColorClass(progress) {
+  const p = Number(progress) || 0;
+  if (p >= 100) return 'prog-done';
+  if (p >= 75)  return 'prog-mostly';
+  if (p >= 50)  return 'prog-half';
+  if (p >= 25)  return 'prog-low';
+  if (p > 0)    return 'prog-tiny';
+  return 'prog-none';
+}
+function phaseGroupName(ph) {
+  switch(ph) {
+    case 'Development': return 'Development';
+    case 'BV1': return 'BV1 — Branch Validation 1';
+    case 'BV2': return 'BV2 — Branch Validation 2';
+    case 'BV3': return 'BV3 — Branch Validation 3';
+    case 'IV': return 'IV — Integration Validation';
+    case 'HV': return 'HV — Head Validation';
+    case 'SV': return 'SV — Sanity Validation';
+    case 'Release': return 'Release';
+    default: return ph;
+  }
+}
+function phaseGroupIcon(ph) {
+  switch(ph) {
+    case 'Development': return '🛠';
+    case 'BV1': case 'BV2': case 'BV3': return '🟡';
+    case 'IV': return '🟣'; case 'HV': return '🔵';
+    case 'SV': return '🟢'; case 'Release': return '🚀';
+    default: return '•';
+  }
+}
+
+function getDevDateRange() {
+  let minD = null, maxD = null;
+  state.tasks.forEach(t => {
+    const s = new Date(t.start), e = new Date(t.end);
+    if (!minD || s < minD) minD = s;
+    if (!maxD || e > maxD) maxD = e;
+  });
+  if (!minD) { minD = new Date(); maxD = addDays(minD, 60); }
+  minD = addDays(minD, -7); maxD = addDays(maxD, 14);
+  return { minD, maxD };
+}
+
+function renderDevGantt() {
+  const zoomSel = document.getElementById('filter-zoom');
+  devDayPx = zoomSel.value === '14' ? 7 : zoomSel.value === '3' ? 24 : 14;
+
+  const devSel = document.getElementById('filter-dev');
+  if (devSel.options.length <= 1) {
+    Object.keys(TEAM).forEach(k => { const o = document.createElement('option'); o.value = k; o.textContent = TEAM[k].name; devSel.appendChild(o); });
+    const o = document.createElement('option'); o.value = 'External'; o.textContent = 'External'; devSel.appendChild(o);
+  }
+  const modSel = document.getElementById('filter-mod');
+  if (modSel.options.length <= 1) {
+    MODULES.forEach(m => { const o = document.createElement('option'); o.value = m.id; o.textContent = m.name; modSel.appendChild(o); });
+    const o = document.createElement('option'); o.value = 'dependencies'; o.textContent = 'Dependencies'; modSel.appendChild(o);
+  }
+
+  const groupBy = document.getElementById('filter-groupby').value;
+  const filterDev = devSel.value;
+  const filterMod = modSel.value;
+  const filterPhase = document.getElementById('filter-phase').value;
+  const blockedOnly = document.getElementById('filter-blocked-only').checked;
+
+  let tasks = state.tasks.filter(t => {
+    if (filterDev && t.assignee !== filterDev) return false;
+    if (filterMod && t.module !== filterMod) return false;
+    if (filterPhase && t.phase !== filterPhase) return false;
+    if (blockedOnly && !isTaskBlocked(t)) return false;
+    return true;
+  });
+
+  const { minD, maxD } = getDevDateRange();
+  const totalDays = daysBetween(minD, maxD);
+  const timelineWidth = totalDays * devDayPx;
+
+  const table = document.getElementById('devstatus-table');
+  table.innerHTML = '';
+  table.style.minWidth = (parseInt(getComputedStyle(document.documentElement).getPropertyValue('--left-col')) + timelineWidth) + 'px';
+
+  const leftHeader = document.createElement('div');
+  leftHeader.className = 'gantt-left-header';
+  leftHeader.textContent = groupBy === 'phase' ? 'Phase / Module' : 'Module / Task';
+  table.appendChild(leftHeader);
+
+  const rightHeader = document.createElement('div');
+  rightHeader.className = 'gantt-right-header';
+  rightHeader.style.width = timelineWidth + 'px';
+  rightHeader.appendChild(buildTimelineHeader(minD, maxD, timelineWidth, devDayPx));
+  table.appendChild(rightHeader);
+
+  const leftCol = document.createElement('div'); leftCol.className = 'gantt-left';
+  const rightCol = document.createElement('div'); rightCol.className = 'gantt-right';
+  rightCol.style.width = timelineWidth + 'px';
+
+  const today = new Date(PROJECT_START);
+  const todayOff = daysBetween(minD, today) * devDayPx;
+  if (todayOff >= 0 && todayOff <= timelineWidth) {
+    const tl = document.createElement('div'); tl.className = 'today-line';
+    tl.style.left = todayOff + 'px';
+    rightCol.appendChild(tl);
+  }
+
+  const groups = {}; const groupOrder = [];
+  if (groupBy === 'phase') {
+    groupOrder.push({ key: 'dependencies', label: '⚠ External Dependencies', kind: 'dep' });
+    PHASE_ORDER.forEach(ph => groupOrder.push({ key: ph, label: phaseGroupIcon(ph)+' '+phaseGroupName(ph), kind: 'phase', phase: ph }));
+    tasks.forEach(t => {
+      const k = t.kind === 'dep' ? 'dependencies' : t.phase;
+      (groups[k] = groups[k] || []).push(t);
+    });
+  } else {
+    groupOrder.push({ key: 'dependencies', label: '⚠ External Dependencies', kind: 'dep' });
+    MODULES.forEach(m => groupOrder.push({ key: m.id, label: '📦 ' + m.name, kind: 'mod' }));
+    tasks.forEach(t => {
+      const k = t.kind === 'dep' ? 'dependencies' : t.module;
+      (groups[k] = groups[k] || []).push(t);
+    });
+  }
+
+  groupOrder.forEach(g => {
+    const items = groups[g.key];
+    if (!items || !items.length) return;
+
+    items.sort((a,b) => {
+      if (groupBy === 'phase') {
+        const ai = MODULES.findIndex(m=>m.id===a.module);
+        const bi = MODULES.findIndex(m=>m.id===b.module);
+        if (ai !== bi) return ai - bi;
+        return (a.subId||'').localeCompare(b.subId||'');
+      } else {
+        if (a.subId !== b.subId) return (a.subId||'').localeCompare(b.subId||'');
+        return PHASE_ORDER.indexOf(a.phase) - PHASE_ORDER.indexOf(b.phase);
+      }
+    });
+
+    const ml = document.createElement('div'); ml.className = 'gantt-row group-row';
+    ml.innerHTML = `<span class="task-name">${g.label}</span> <span class="task-meta">${items.length} tasks</span>`;
+    leftCol.appendChild(ml);
+    const mr = document.createElement('div'); mr.className = 'gantt-bar-row group-row'; mr.style.width = timelineWidth + 'px';
+
+    if (groupBy === 'phase' && g.kind === 'phase') {
+      const sMin = items.reduce((m,t)=> !m || new Date(t.start)<new Date(m) ? t.start : m, null);
+      const sMax = items.reduce((m,t)=> !m || new Date(t.end)>new Date(m) ? t.end : m, null);
+      if (sMin && sMax) {
+        const off = daysBetween(minD, new Date(sMin)) * devDayPx;
+        const len = Math.max(1, daysBetween(new Date(sMin), new Date(sMax))) * devDayPx;
+        const summary = document.createElement('div');
+        summary.className = 'phase-group-bar ' + phaseToClass(g.phase, 'task');
+        summary.style.left = off + 'px';
+        summary.style.width = len + 'px';
+        mr.appendChild(summary);
+      }
+    }
+    rightCol.appendChild(mr);
+
+    items.forEach(t => {
+      const blocked = isTaskBlocked(t);
+      const owner = TEAM[t.assignee] || { name: t.assignee || 'External', cls: '' };
+      const lrow = document.createElement('div'); lrow.className = 'gantt-row sub-row' + (blocked ? ' blocked-row' : '');
+      lrow.onclick = () => openTaskModal(t.id);
+
+      let label;
+      if (groupBy === 'phase') {
+        const mod = MODULES.find(m=>m.id===t.module);
+        const subName = mod ? (mod.submodules.find(s=>s.id===t.subId)?.name || mod.name) : t.name;
+        const modLabel = mod ? mod.name : '';
+        label = mod ? `${subName} <span class="task-meta">— ${modLabel}</span>` : `${t.name}`;
+      } else {
+        label = `${t.name} <span class="task-meta">— ${t.phase}</span>`;
+      }
+      const blkBadge = blocked ? '<span class="chip bad" style="margin-left:6px">Blocked</span>' : '';
+      lrow.innerHTML = `<span class="task-name">${label}${blkBadge}</span> <span class="task-meta"><span class="avatar ${owner.cls}">${initials(owner.name||'EX')}</span></span>`;
+      leftCol.appendChild(lrow);
+
+      const rrow = document.createElement('div'); rrow.className = 'gantt-bar-row' + (blocked ? ' blocked-row' : ''); rrow.style.width = timelineWidth + 'px';
+
+      const off = daysBetween(minD, new Date(t.start)) * devDayPx;
+      const len = Math.max(1, daysBetween(new Date(t.start), new Date(t.end))) * devDayPx;
+
+      const bar = document.createElement('div');
+      // Color every bar by progress (deps + tasks). Blocked overlays as red stripes.
+      bar.className = 'gantt-bar ' + progColorClass(t.progress) + (blocked ? ' blocked' : '');
+      bar.style.left = off + 'px'; bar.style.width = len + 'px';
+      bar.onclick = (e) => { e.stopPropagation(); openTaskModal(t.id); };
+      bar.onmouseenter = (e) => showTip(e, tooltipForDev(t));
+      bar.onmouseleave = hideTip;
+      bar.onmousemove = moveTip;
+
+      const barLabel = groupBy === 'phase'
+        ? `${(MODULES.find(m=>m.id===t.module)?.name)||t.phase} · ${t.progress||0}%`
+        : `${t.phase} · ${t.progress||0}%`;
+      bar.innerHTML = `<div class="progress" style="width:${t.progress||0}%"></div><span class="label">${barLabel}</span>`;
+      rrow.appendChild(bar);
+      rightCol.appendChild(rrow);
+    });
+  });
+
+  table.appendChild(leftCol);
+  table.appendChild(rightCol);
+
+  ['filter-groupby','filter-dev','filter-mod','filter-phase','filter-zoom','filter-blocked-only'].forEach(id => {
+    const el = document.getElementById(id);
+    el.onchange = renderDevGantt;
+  });
+}
+
+/* ===== Project Management Gantt ===== */
+let pmDayPx = 14;
+
+function getPmDateRange() {
+  let minD = null, maxD = null;
+  state.pmTasks.forEach(t => {
+    const s = new Date(t.start), e = new Date(t.end);
+    if (!minD || s < minD) minD = s;
+    if (!maxD || e > maxD) maxD = e;
+  });
+  if (!minD) { minD = new Date(); maxD = addDays(minD, 60); }
+  minD = addDays(minD, -7); maxD = addDays(maxD, 14);
+  return { minD, maxD };
+}
+
+function renderPmGantt() {
+  const zoomSel = document.getElementById('pm-zoom');
+  const zoomMap = { month: 4, week: 14, day: 28, half: 56, quarter: 112 };
+  pmDayPx = zoomMap[zoomSel.value] || 14;
+
+  const phSel = document.getElementById('pm-phase-filter');
+  if (phSel.options.length <= 1) {
+    PM_PHASES.forEach(p => { const o = document.createElement('option'); o.value = p.id; o.textContent = p.name; phSel.appendChild(o); });
+  }
+  const view = document.getElementById('pm-view').value;
+  const phFilter = phSel.value;
+
+  let tasks = state.pmTasks.slice();
+  if (phFilter) tasks = tasks.filter(t => t.phaseId === phFilter);
+  if (view === 'blocked') tasks = tasks.filter(isPmBlocked);
+  else if (view === 'active') {
+    const today = new Date(PROJECT_START);
+    tasks = tasks.filter(t => new Date(t.end) >= today);
+  }
+
+  const blockedCount = state.pmTasks.filter(isPmBlocked).length;
+  const lateCount = state.pmTasks.filter(isPmLate).length;
+  document.getElementById('pm-summary').textContent =
+    `${state.pmTasks.length} tasks · ${blockedCount} blocked · ${lateCount} late · ${PM_PHASES.length} phases`;
+
+  const { minD, maxD } = getPmDateRange();
+  const totalDays = daysBetween(minD, maxD);
+  const timelineWidth = totalDays * pmDayPx;
+
+  const table = document.getElementById('pm-table');
+  table.innerHTML = '';
+  table.style.minWidth = (parseInt(getComputedStyle(document.documentElement).getPropertyValue('--left-col')) + timelineWidth) + 'px';
+
+  const leftHeader = document.createElement('div');
+  leftHeader.className = 'gantt-left-header';
+  leftHeader.textContent = 'Phase / Task';
+  table.appendChild(leftHeader);
+
+  const rightHeader = document.createElement('div');
+  rightHeader.className = 'gantt-right-header';
+  rightHeader.style.width = timelineWidth + 'px';
+  rightHeader.appendChild(buildTimelineHeader(minD, maxD, timelineWidth, pmDayPx));
+  table.appendChild(rightHeader);
+
+  const leftCol = document.createElement('div'); leftCol.className = 'gantt-left';
+  const rightCol = document.createElement('div'); rightCol.className = 'gantt-right';
+  rightCol.style.width = timelineWidth + 'px';
+
+  const today = new Date(PROJECT_START);
+  const todayOff = daysBetween(minD, today) * pmDayPx;
+  if (todayOff >= 0 && todayOff <= timelineWidth) {
+    const tl = document.createElement('div'); tl.className = 'today-line';
+    tl.style.left = todayOff + 'px';
+    rightCol.appendChild(tl);
+  }
+
+  // Render each phase: parent bar row + child task rows
+  PM_PHASES.forEach(ph => {
+    const items = tasks.filter(t => t.phaseId === ph.id);
+    if (!items.length) return;
+
+    const phMin = items.reduce((m,t)=> !m || new Date(t.start)<new Date(m) ? t.start : m, null);
+    const phMax = items.reduce((m,t)=> !m || new Date(t.end)>new Date(m) ? t.end : m, null);
+    const phDur = daysBetween(new Date(phMin), new Date(phMax));
+
+    // Parent label row (left)
+    const ml = document.createElement('div'); ml.className = 'gantt-row group-row';
+    const anyBlocked = items.some(isPmBlocked);
+    const anyLate = items.some(isPmLate);
+    const stateBadge = anyBlocked
+      ? '<span class="chip bad" style="margin-left:6px">Blocked</span>'
+      : anyLate
+        ? '<span class="chip bad" style="margin-left:6px">Late</span>'
+        : '';
+    ml.innerHTML = `<span class="task-name">${escapeHTML(ph.name)} ${stateBadge}</span> <span class="task-meta">${items.length} · ${phDur}d</span>`;
+    leftCol.appendChild(ml);
+
+    // Parent bar row (right) — Frappe-style black bar with ▼ icon
+    const mr = document.createElement('div'); mr.className = 'gantt-bar-row group-row'; mr.style.width = timelineWidth + 'px';
+    if (phMin && phMax) {
+      const off = daysBetween(minD, new Date(phMin)) * pmDayPx;
+      const len = Math.max(1, daysBetween(new Date(phMin), new Date(phMax))) * pmDayPx;
+      const parentBar = document.createElement('div');
+      parentBar.className = 'gantt-bar parent-bar';
+      parentBar.style.left = off + 'px';
+      parentBar.style.width = len + 'px';
+      parentBar.innerHTML = `<span class="label">${escapeHTML(ph.name)}</span>`;
+      // Date labels as siblings of the bar (outside the clipped bar element)
+      const startLbl = document.createElement('div');
+      startLbl.className = 'bar-edge-label';
+      startLbl.style.left = Math.max(0, off - 56) + 'px';
+      startLbl.textContent = fmtShortDate(phMin);
+      const endLbl = document.createElement('div');
+      endLbl.className = 'bar-edge-label';
+      endLbl.style.left = (off + len + 6) + 'px';
+      endLbl.innerHTML = `${fmtShortDate(phMax)} <span class="dur">${phDur}d</span>`;
+      mr.appendChild(startLbl);
+      mr.appendChild(parentBar);
+      mr.appendChild(endLbl);
+    }
+    rightCol.appendChild(mr);
+
+    // Child task rows
+    items.forEach(t => {
+      const blocked = isPmBlocked(t);
+      const tstate = pmTaskState(t);
+
+      const lrow = document.createElement('div'); lrow.className = 'gantt-row sub-row' + (blocked ? ' blocked-row' : '');
+      lrow.onclick = () => openPmTaskInfo(t);
+      const badge = blocked
+        ? '<span class="chip bad" style="margin-left:6px">Blocked</span>'
+        : tstate === 'late'
+          ? '<span class="chip bad" style="margin-left:6px">Late</span>'
+          : tstate === 'upcoming'
+            ? '<span class="chip info" style="margin-left:6px">Upcoming</span>'
+            : '';
+      const ms = t.milestone ? '🏁 ' : '';
+      lrow.innerHTML = `<span class="task-name">${ms}${escapeHTML(t.name)} ${badge}</span> <span class="task-meta">${fmtShortDate(t.start)} → ${fmtShortDate(t.end)}</span>`;
+      leftCol.appendChild(lrow);
+
+      const rrow = document.createElement('div'); rrow.className = 'gantt-bar-row' + (blocked ? ' blocked-row' : ''); rrow.style.width = timelineWidth + 'px';
+      const off = daysBetween(minD, new Date(t.start)) * pmDayPx;
+      const dur = Math.max(1, daysBetween(new Date(t.start), new Date(t.end)));
+      const len = dur * pmDayPx;
+
+      const bar = document.createElement('div');
+      // Pick base class by state: blocked > late > upcoming > ontime. Milestone keeps its gold border.
+      const baseCls = blocked ? 'blocked' : (tstate === 'late' ? 'late' : tstate === 'upcoming' ? 'upcoming' : 'ontime');
+      bar.className = 'gantt-bar ' + baseCls + (t.milestone ? ' milestone' : '');
+      bar.style.left = off + 'px'; bar.style.width = len + 'px';
+      bar.onmouseenter = (e) => showTip(e, tooltipForPm(t));
+      bar.onmouseleave = hideTip;
+      bar.onmousemove = moveTip;
+      bar.innerHTML = `<div class="progress" style="width:${t.progress||0}%"></div><span class="label">${(t.milestone?'🏁 ':'') + escapeHTML(t.name)}</span>`;
+
+      // Date labels as siblings of bar (positioned outside it)
+      const startLbl = document.createElement('div');
+      startLbl.className = 'bar-edge-label';
+      startLbl.style.left = Math.max(0, off - 46) + 'px';
+      startLbl.textContent = fmtShortDate(t.start);
+      const endLbl = document.createElement('div');
+      endLbl.className = 'bar-edge-label';
+      endLbl.style.left = (off + len + 6) + 'px';
+      endLbl.innerHTML = `${fmtShortDate(t.end)} <span class="dur">${dur}d</span>`;
+
+      rrow.appendChild(startLbl);
+      rrow.appendChild(bar);
+      rrow.appendChild(endLbl);
+      rightCol.appendChild(rrow);
+    });
+  });
+
+  table.appendChild(leftCol);
+  table.appendChild(rightCol);
+
+  ['pm-view','pm-phase-filter','pm-zoom'].forEach(id => {
+    const el = document.getElementById(id);
+    el.onchange = renderPmGantt;
+  });
+}
+
+function openPmTaskInfo(t) {
+  const reasons = reasonsBlocked(t, 'pm');
+  const msg = `${t.phaseName} → ${t.name}\nDates: ${t.start} → ${t.end}\nProgress: ${t.progress||0}%${reasons.length ? '\n\nBlocked by:\n - ' + reasons.join('\n - ') : ''}`;
+  alert(msg);
+}
+
+/* ===== Tooltips ===== */
+function tooltipForDev(t) {
+  const owner = (TEAM[t.assignee]||{name:t.assignee||'External'}).name;
+  const mod = MODULES.find(m=>m.id===t.module);
+  const reasons = reasonsBlocked(t, 'dev');
+  return `<b>${escapeHTML(t.name)}</b><br>
+    Module: ${mod ? mod.name : (t.module==='dependencies' ? 'External Dependency' : t.module)}<br>
+    Assignee: ${owner}<br>
+    Phase: ${t.phase}<br>
+    ${t.start} → ${t.end}<br>
+    Progress: ${t.progress||0}%<br>
+    ${reasons.length ? '<br><b>Blocked by:</b><br>• ' + reasons.join('<br>• ') : ''}
+    ${t.notes ? '<br>Notes: ' + escapeHTML(t.notes) : ''}`;
+}
+function tooltipForPm(t) {
+  const reasons = reasonsBlocked(t, 'pm');
+  return `<b>${escapeHTML(t.name)}</b><br>
+    Phase: ${escapeHTML(t.phaseName)}<br>
+    ${t.start} → ${t.end}<br>
+    Progress: ${t.progress||0}%<br>
+    ${reasons.length ? '<br><b>Blocked by:</b><br>• ' + reasons.join('<br>• ') : ''}`;
+}
+
+const tipEl = document.getElementById('tip');
+function showTip(e, html) { tipEl.innerHTML = html; tipEl.style.display = 'block'; moveTip(e); }
+function moveTip(e) { tipEl.style.left = (e.clientX + 14) + 'px'; tipEl.style.top = (e.clientY + 14) + 'px'; }
+function hideTip() { tipEl.style.display = 'none'; }
+
+/* ===== Tasks Table ===== */
+function renderTaskTable() {
+  const tdev = document.getElementById('task-filter-dev');
+  if (tdev.options.length <= 1) {
+    Object.keys(TEAM).forEach(k => { const o = document.createElement('option'); o.value = k; o.textContent = TEAM[k].name; tdev.appendChild(o); });
+    const o = document.createElement('option'); o.value = 'External'; o.textContent = 'External'; tdev.appendChild(o);
+  }
+  const q = (document.getElementById('task-search').value||'').toLowerCase();
+  const fdev = tdev.value;
+  const fph = document.getElementById('task-filter-phase').value;
+  const onlyBlocked = document.getElementById('task-filter-blocked').checked;
+
+  const tbody = document.getElementById('tasks-tbody');
+  tbody.innerHTML = '';
+  state.tasks
+    .filter(t => !q || t.name.toLowerCase().includes(q))
+    .filter(t => !fdev || t.assignee === fdev)
+    .filter(t => !fph || t.phase === fph)
+    .filter(t => !onlyBlocked || isTaskBlocked(t))
+    .sort((a,b) => new Date(a.start) - new Date(b.start))
+    .forEach(t => {
+      const tr = document.createElement('tr');
+      const blocked = isTaskBlocked(t);
+      if (blocked) tr.className = 'blocked-row';
+      const mod = MODULES.find(m=>m.id===t.module);
+      const modName = mod ? mod.name : (t.module==='dependencies'?'Dependencies':t.module);
+      const owner = TEAM[t.assignee]||{name:t.assignee||'External',cls:''};
+      const phaseCls = (t.phase||'').toLowerCase();
+      const blocks = (t.blockedBy||[]).map(id => {
+        const d = depById(id);
+        return d ? `<span class="chip bad" style="margin-right:4px">${escapeHTML(d.name)}</span>` : '';
+      }).join('') || '—';
+      tr.innerHTML = `
+        <td><strong>#${t.id}</strong> ${escapeHTML(t.name)} ${blocked ? '<span class="pill blocked">Blocked</span>' : ''}</td>
+        <td>${escapeHTML(modName)}</td>
+        <td><span class="avatar ${owner.cls}">${initials(owner.name||'EX')}</span>${escapeHTML(owner.name||'External')}</td>
+        <td><span class="pill ${phaseCls}">${t.phase}</span></td>
+        <td>${t.start}</td>
+        <td>${t.end}</td>
+        <td>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div class="progress-bar"><div class="fill" style="width:${t.progress||0}%"></div></div>
+            <span style="font-size:11px;color:var(--muted)">${t.progress||0}%</span>
+          </div>
+        </td>
+        <td>${blocks}</td>
+        <td><button class="btn" onclick="openTaskModal(${t.id})">Edit</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+  ['task-search','task-filter-dev','task-filter-phase','task-filter-blocked'].forEach(id => {
+    const el = document.getElementById(id);
+    el.oninput = renderTaskTable; el.onchange = renderTaskTable;
+  });
+}
+
+/* ===== Dependencies Table ===== */
+function renderDepTable() {
+  const fst = document.getElementById('dep-filter-status').value;
+  const tbody = document.getElementById('deps-tbody');
+  tbody.innerHTML = '';
+  state.dependencies
+    .filter(d => !fst || d.status === fst)
+    .forEach(d => {
+      const tr = document.createElement('tr');
+      const chipCls = d.status === 'delivered' ? 'ok' : d.status === 'pending' ? 'warn' : 'bad';
+      // count tasks/PM items blocked by this dep
+      const blockedDev = state.tasks.filter(t => (t.blockedBy||[]).includes(d.id) && isTaskBlocked(t)).length;
+      const blockedPm  = state.pmTasks.filter(p => (p.blockedBy||[]).includes(d.id) && isPmBlocked(p)).length;
+      const totalRefs  = state.tasks.filter(t => (t.blockedBy||[]).includes(d.id)).length
+                       + state.pmTasks.filter(p => (p.blockedBy||[]).includes(d.id)).length;
+      const overdue = d.due && new Date(d.due) < new Date(PROJECT_START) && d.status !== 'delivered';
+      tr.innerHTML = `
+        <td><strong>${escapeHTML(d.name)}</strong></td>
+        <td>${escapeHTML(d.team || '—')}</td>
+        <td><span class="chip ${chipCls}">${labelForDepStatus(d.status)}</span></td>
+        <td>${d.due || '—'}${overdue ? ' <span class="chip bad" style="margin-left:4px">Overdue</span>' : ''}</td>
+        <td style="color:var(--muted)">${escapeHTML(d.notes||'')}</td>
+        <td>${totalRefs ? `<span class="chip ${blockedDev+blockedPm > 0 ? 'bad' : 'info'}">${blockedDev+blockedPm} active / ${totalRefs} mapped</span>` : '—'}</td>
+        <td><button class="btn" onclick="openDepModal('${d.id}')">Edit</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+  document.getElementById('dep-filter-status').onchange = renderDepTable;
+}
+
+/* ===== Task Modal ===== */
+function openTaskModal(id) {
+  const modal = document.getElementById('task-modal');
+  modal.classList.add('open');
+
+  const modSel = document.getElementById('task-module');
+  modSel.innerHTML = '';
+  MODULES.forEach(m => { const o = document.createElement('option'); o.value = m.id; o.textContent = m.name; modSel.appendChild(o); });
+  const oDep = document.createElement('option'); oDep.value = 'dependencies'; oDep.textContent = 'External Dependencies'; modSel.appendChild(oDep);
+
+  const aSel = document.getElementById('task-assignee');
+  aSel.innerHTML = '';
+  Object.keys(TEAM).forEach(k => { const o = document.createElement('option'); o.value = k; o.textContent = TEAM[k].name; aSel.appendChild(o); });
+  const oEx = document.createElement('option'); oEx.value = 'External'; oEx.textContent = 'External'; aSel.appendChild(oEx);
+
+  const t = state.tasks.find(x => x.id === id);
+  document.getElementById('modal-title').textContent = t ? 'Edit Task #' + id : 'Add Task';
+  document.getElementById('btn-delete').style.display = t ? '' : 'none';
+  document.getElementById('task-id').value = t ? t.id : '';
+  document.getElementById('task-name').value = t ? t.name : '';
+  document.getElementById('task-module').value = t ? t.module : 'builder';
+  document.getElementById('task-assignee').value = t ? t.assignee : 'karthik';
+  document.getElementById('task-phase').value = t ? t.phase : 'Development';
+  document.getElementById('task-progress').value = t ? (t.progress||0) : 0;
+  document.getElementById('task-progress-val').textContent = (t ? (t.progress||0) : 0) + '%';
+  document.getElementById('task-start').value = t ? t.start : dateStr(new Date(PROJECT_START));
+  document.getElementById('task-end').value = t ? t.end : dateStr(addDays(new Date(PROJECT_START), 7));
+  document.getElementById('task-notes').value = t ? (t.notes||'') : '';
+
+  const blkList = document.getElementById('task-blocked-by');
+  blkList.innerHTML = '';
+  const sel = (t && t.blockedBy) ? t.blockedBy : [];
+  state.dependencies.forEach(d => {
+    const lab = document.createElement('label');
+    const cb = document.createElement('input');
+    cb.type = 'checkbox'; cb.value = d.id; cb.checked = sel.includes(d.id);
+    cb.dataset.depId = d.id;
+    lab.appendChild(cb);
+    const txt = document.createElement('span');
+    txt.innerHTML = `${escapeHTML(d.name)} <span class="chip ${d.status==='delivered'?'ok':d.status==='pending'?'warn':'bad'}" style="margin-left:6px">${labelForDepStatus(d.status)}</span>`;
+    lab.appendChild(txt);
+    blkList.appendChild(lab);
+  });
+}
+function closeTaskModal() { document.getElementById('task-modal').classList.remove('open'); }
+document.getElementById('task-progress').oninput = e => {
+  document.getElementById('task-progress-val').textContent = e.target.value + '%';
+};
+
+function saveTask() {
+  const idVal = document.getElementById('task-id').value;
+  const blockedBy = Array.from(document.querySelectorAll('#task-blocked-by input:checked')).map(c => c.value);
+  const obj = {
+    name: document.getElementById('task-name').value.trim(),
+    module: document.getElementById('task-module').value,
+    assignee: document.getElementById('task-assignee').value,
+    phase: document.getElementById('task-phase').value,
+    progress: parseInt(document.getElementById('task-progress').value,10)||0,
+    start: document.getElementById('task-start').value,
+    end: document.getElementById('task-end').value,
+    blockedBy: blockedBy,
+    notes: document.getElementById('task-notes').value,
+    kind: 'task'
+  };
+  if (!obj.name) { alert('Task name is required'); return; }
+  if (idVal) {
+    const t = state.tasks.find(x => x.id === parseInt(idVal,10));
+    Object.assign(t, obj);
+  } else {
+    obj.id = nextTaskId();
+    state.tasks.push(obj);
+  }
+  saveState();
+  closeTaskModal();
+  refreshAll();
+}
+
+function deleteTask() {
+  const idVal = parseInt(document.getElementById('task-id').value, 10);
+  if (!idVal) return;
+  if (!confirm('Delete this task?')) return;
+  state.tasks = state.tasks.filter(t => t.id !== idVal);
+  saveState();
+  closeTaskModal();
+  refreshAll();
+}
+
+/* ===== Dependency Modal ===== */
+function openDepModal(id) {
+  const modal = document.getElementById('dep-modal');
+  modal.classList.add('open');
+  const d = id ? state.dependencies.find(x => x.id === id) : null;
+  document.getElementById('dep-modal-title').textContent = d ? 'Edit Dependency' : 'Add Dependency';
+  document.getElementById('dep-btn-delete').style.display = d ? '' : 'none';
+  document.getElementById('dep-id-hidden').value = d ? d.id : '';
+  document.getElementById('dep-name').value = d ? d.name : '';
+  document.getElementById('dep-team').value = d ? (d.team||'') : '';
+  document.getElementById('dep-status').value = d ? d.status : 'pending';
+  document.getElementById('dep-due').value = d ? (d.due||'') : '';
+  document.getElementById('dep-notes').value = d ? (d.notes||'') : '';
+}
+function closeDepModal() { document.getElementById('dep-modal').classList.remove('open'); }
+
+function saveDep() {
+  const id = document.getElementById('dep-id-hidden').value;
+  const obj = {
+    name: document.getElementById('dep-name').value.trim(),
+    team: document.getElementById('dep-team').value.trim(),
+    status: document.getElementById('dep-status').value,
+    due: document.getElementById('dep-due').value,
+    notes: document.getElementById('dep-notes').value
+  };
+  if (!obj.name) { alert('Dependency name required'); return; }
+  if (id) {
+    const d = state.dependencies.find(x => x.id === id);
+    Object.assign(d, obj);
+  } else {
+    obj.id = nextDepId();
+    state.dependencies.push(obj);
+  }
+  saveState();
+  closeDepModal();
+  refreshAll();
+}
+
+function deleteDep() {
+  const id = document.getElementById('dep-id-hidden').value;
+  if (!id) return;
+  if (!confirm('Delete this dependency? Tasks referencing it will be unblocked.')) return;
+  // Remove references from tasks
+  state.tasks.forEach(t => { t.blockedBy = (t.blockedBy||[]).filter(x => x !== id); });
+  state.pmTasks.forEach(p => { p.blockedBy = (p.blockedBy||[]).filter(x => x !== id); });
+  state.dependencies = state.dependencies.filter(d => d.id !== id);
+  saveState();
+  closeDepModal();
+  refreshAll();
+}
+
+function refreshAll() {
+  renderReleaseBar();
+  renderOverview();
+  renderTaskTable();
+  renderDepTable();
+  if (document.getElementById('tab-devstatus').style.display !== 'none') renderDevGantt();
+  if (document.getElementById('tab-pm').style.display !== 'none') renderPmGantt();
+}
+
+/* ===== Import / Export / Reset ===== */
+function exportJSON() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type:'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'log360_soar_tracker_' + dateStr(new Date()) + '.json';
+  a.click();
+}
+function importJSON() {
+  const inp = document.createElement('input');
+  inp.type = 'file'; inp.accept = '.json';
+  inp.onchange = (e) => {
+    const f = e.target.files[0]; if (!f) return;
+    const r = new FileReader();
+    r.onload = ev => {
+      try { state = JSON.parse(ev.target.result); saveState(); refreshAll(); alert('Imported.'); }
+      catch (er) { alert('Invalid file.'); }
+    };
+    r.readAsText(f);
+  };
+  inp.click();
+}
+function resetData() {
+  if (!confirm('Reset all data to defaults? This will clear your edits.')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  state = loadState();
+  refreshAll();
+}
+
+renderReleaseBar();
+renderOverview();
+</script>
+</body>
+</html>
