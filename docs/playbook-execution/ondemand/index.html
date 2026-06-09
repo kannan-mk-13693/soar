@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+<title>OnDemand Playbook Execution | Log360 SOAR</title>
+<link rel="stylesheet" href="../doc.css" />
+</head>
+<body>
+
+<header class="app-header">
+  <div class="title">
+    <div class="logo" style="background:linear-gradient(135deg,#12b886,#0a8754);">OD</div>
+    <div>
+      <h1>OnDemand Playbook Execution</h1>
+      <div class="sub">HLD · On-Demand Flow · Live WebSocket Updates</div>
+    </div>
+  </div>
+  <div class="actions">
+    <a class="btn" href="../../../index.html">← Back to Tracker</a>
+  </div>
+</header>
+
+<nav class="crumbs">
+  <a href="../../../index.html">Tracker</a> ›
+  <a href="../../../index.html#tab-docs">Docs</a> ›
+  <a href="../index.html">Playbook Execution</a> ›
+  <span>OnDemand Execution</span>
+</nav>
+
+<div class="layout">
+
+  <main>
+
+    <section class="card" id="summary">
+      <h2><span class="dot" style="background:var(--accent-2)"></span> Summary</h2>
+      <p>
+        When a user clicks <b>"Run"</b> on a playbook from the console, the playbook runs immediately
+        and the user watches each step finish live on screen. This is the <b>on-demand flow</b>.
+      </p>
+    </section>
+
+    <section class="card" id="how-it-works">
+      <h2><span class="dot" style="background:var(--ok)"></span> How it works (step by step)</h2>
+      <ol class="numbered">
+        <li>
+          <b>User runs it.</b> The UI calls the API (<code>onDemandExecution</code>) with
+          <code>ON_DEMAND_EXECUTION = true</code>. The system first checks the user is allowed and
+          the template is enabled.
+        </li>
+        <li>
+          <b>Set up the run.</b> <code>ExecutionController</code> prepares the inputs, creates an
+          execution record (with an <code>executionId</code>), and builds the run task — marked as
+          "on-demand."
+        </li>
+        <li>
+          <b>Pick the lane.</b> Because it's on-demand, the task goes to the
+          <code>OnDemandPlaybookExecutor</code> (a dedicated thread pool).
+          Alert/scheduled runs instead go to a <b>durable queue</b> — same engine, different lane.
+        </li>
+        <li>
+          <b>Remember who asked.</b> Before running, the executor saves which user started this
+          execution (<code>executionId → userId</code>). This is how live updates later find the right
+          browser.
+        </li>
+        <li>
+          <b>Run it.</b> A pool thread executes the playbook block by block. Each block does its work
+          and saves an audit record.
+        </li>
+        <li>
+          <b>Stream progress.</b> After each block, the audit is saved to the database. If the run is
+          on-demand, that same update is also pushed over a <b>WebSocket</b> to the user's screen — so
+          they see progress in real time. (Normal runs just save; they don't push.)
+        </li>
+        <li>
+          <b>Finish.</b> When all blocks are done, the run is marked complete and cleaned up.
+        </li>
+      </ol>
+    </section>
+
+    <section class="card" id="key-points">
+      <h2><span class="dot" style="background:var(--info)"></span> Key Points</h2>
+      <ul class="bullet">
+        <li>On-demand runs use their own thread pool, separate from alert/scheduled runs.</li>
+        <li>The <code>executionId → userId</code> map is what connects a running playbook to the user's live screen.</li>
+        <li>Live updates are sent only for on-demand runs, so normal runs do no extra work.</li>
+      </ul>
+    </section>
+
+    <section class="card" id="architecture">
+      <h2><span class="dot" style="background:var(--warn)"></span> Architecture Diagram</h2>
+      <p class="muted">Click the diagram to zoom in / out and pan.</p>
+      <img class="diagram" src="assets/architecture.png" alt="OnDemand Playbook Execution — architecture diagram" />
+    </section>
+
+    <section class="card" id="workflow">
+      <h2><span class="dot" style="background:var(--bad)"></span> Workflow Diagram</h2>
+      <img class="diagram" src="assets/workflow.png" alt="OnDemand Playbook Execution — workflow diagram" />
+    </section>
+
+    <footer class="doc-footer">
+      Source: <code>OnDemand Playbook Execution.pdf</code> · Log360 SOAR · HLD
+    </footer>
+  </main>
+
+  <aside class="toc-rail" aria-label="On this page">
+    <div class="toc-title">On this page</div>
+    <nav class="toc-list">
+      <a href="#summary" class="toc-link">Summary</a>
+      <a href="#how-it-works" class="toc-link">How it works</a>
+      <a href="#key-points" class="toc-link">Key Points</a>
+      <a href="#architecture" class="toc-link">Architecture Diagram</a>
+      <a href="#workflow" class="toc-link">Workflow Diagram</a>
+    </nav>
+  </aside>
+
+</div>
+
+<script src="../lightbox.js"></script>
+<script src="../toc.js"></script>
+</body>
+</html>

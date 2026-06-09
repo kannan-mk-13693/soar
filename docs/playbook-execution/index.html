@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+<title>Playbook Execution Architecture | Log360 SOAR</title>
+<link rel="stylesheet" href="doc.css" />
+</head>
+<body>
+
+<header class="app-header">
+  <div class="title">
+    <div class="logo">PE</div>
+    <div>
+      <h1>Playbook Execution Architecture</h1>
+      <div class="sub">HLD · Execution flow, runnable lifecycle, FW interaction</div>
+    </div>
+  </div>
+  <div class="actions">
+    <a class="btn" href="../../index.html">← Back to Tracker</a>
+  </div>
+</header>
+
+<nav class="crumbs">
+  <a href="../../index.html">Tracker</a> ›
+  <a href="../../index.html#tab-docs">Docs</a> ›
+  <span>Playbook Execution</span>
+</nav>
+
+<main>
+  <section class="card">
+    <h2><span class="dot"></span> Sub-Categories</h2>
+    <p class="muted">Playbook Execution is split into three execution categories. Click any tile to drill in.</p>
+    <div class="tile-grid">
+
+      <a class="doc-tile-lg" href="priority/index.html">
+        <div class="tile-icon" style="background:linear-gradient(135deg,#4263eb,#7048e8);">PQ</div>
+        <div>
+          <div class="tile-name">Playbook Execution with Priority</div>
+          <div class="tile-desc">Two-lane pipeline (normal + priority) — queue handling, thread pools, lane isolation.</div>
+          <div class="tile-meta">
+            <span class="chip info">Queue Handling</span>
+            <span class="chip info">Two-Lane</span>
+            <span class="chip info">Thread Pool</span>
+          </div>
+        </div>
+      </a>
+
+      <a class="doc-tile-lg" href="audit/index.html">
+        <div class="tile-icon" style="background:linear-gradient(135deg,#7048e8,#4263eb);">PA</div>
+        <div>
+          <div class="tile-name">Playbook Audit Execution</div>
+          <div class="tile-desc">Block-execution audit trail — DB → PlaybookFacade SPI → ELA Impl → Elasticsearch.</div>
+          <div class="tile-meta">
+            <span class="chip info">Audit Trail</span>
+            <span class="chip info">Elasticsearch</span>
+            <span class="chip info">SPI</span>
+          </div>
+        </div>
+      </a>
+
+      <a class="doc-tile-lg" href="ondemand/index.html">
+        <div class="tile-icon" style="background:linear-gradient(135deg,#12b886,#0a8754);">OD</div>
+        <div>
+          <div class="tile-name">Playbook OnDemand Execution</div>
+          <div class="tile-desc">User-triggered runs with live WebSocket progress; dedicated executor &amp; user-session map.</div>
+          <div class="tile-meta">
+            <span class="chip info">OnDemand</span>
+            <span class="chip info">WebSocket</span>
+            <span class="chip info">Live Push</span>
+          </div>
+        </div>
+      </a>
+
+    </div>
+  </section>
+
+  <footer class="doc-footer">
+    Log360 SOAR · HLD · Playbook Execution Architecture
+  </footer>
+</main>
+</body>
+</html>

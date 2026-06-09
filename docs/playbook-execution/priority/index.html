@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+<title>Playbook Execution — Priority Queue | Log360 SOAR</title>
+<link rel="stylesheet" href="../doc.css" />
+</head>
+<body>
+
+<header class="app-header">
+  <div class="title">
+    <div class="logo">PE</div>
+    <div>
+      <h1>Playbook Execution — Priority Queue</h1>
+      <div class="sub">HLD · Queue Handling · Two-Lane Pipeline</div>
+    </div>
+  </div>
+  <div class="actions">
+    <a class="btn" href="../../../index.html">← Back to Tracker</a>
+  </div>
+</header>
+
+<nav class="crumbs">
+  <a href="../../../index.html">Tracker</a> ›
+  <a href="../../../index.html#tab-docs">Docs</a> ›
+  <a href="../index.html">Playbook Execution</a> ›
+  <span>Priority Queue</span>
+</nav>
+
+<div class="layout">
+
+  <main>
+
+    <section class="card" id="handler">
+      <h2><span class="dot"></span> PlayBookExecution Handler</h2>
+      <p>
+        This is the execution pipeline <b>after the priority-lane refactor</b>. The handler remains a singleton,
+        but it now owns <b>two parallel lanes</b> — <b>normal</b> and <b>priority</b> — each with its own
+        <code>ObjectMessenger</code>, daemon worker thread, and fixed-size thread pool
+        (default = 10 threads per lane, so up to 20 playbooks can run concurrently across both lanes).
+      </p>
+      <p>
+        Manually-triggered playbooks land in the normal lane via <code>enqueue()</code>;
+        priority-tagged executions land in the priority lane via <code>enqueuePriority()</code> and are
+        processed by an entirely separate pipeline so they cannot be starved by normal traffic.
+      </p>
+    </section>
+
+    <section class="card" id="key-fields">
+      <h2><span class="dot" style="background:var(--accent-2)"></span> Key Fields</h2>
+      <div class="kv-grid">
+        <div class="kv">
+          <div class="k"><code>messenger</code> / <code>priorityMessenger</code></div>
+          <div class="v">Two <code>ObjectMessenger&lt;JSONObject&gt;</code> instances backed by an in-memory queue plus a disk overflow file (<code>PlayBook.dmp</code> and <code>PlayBook_priority.dmp</code>) once <code>MAX_QUEUE_SIZE</code> is exceeded.</div>
+        </div>
+        <div class="kv">
+          <div class="k"><code>playbookThreadpoolExec</code> / <code>priorityPlaybookThreadpoolExec</code></div>
+          <div class="v">Two <code>ThreadPoolExecutors</code> (FixedThreadPool), independent budgets per lane.</div>
+        </div>
+        <div class="kv">
+          <div class="k"><code>DATARECIVED</code> / <code>PRIORITY_DATARECIVED</code></div>
+          <div class="v"><code>AtomicLong</code>; incremented on every <code>enqueue</code> / <code>enqueuePriority</code> call.</div>
+        </div>
+        <div class="kv">
+          <div class="k"><code>DATAPROCESSED</code> / <code>PRIORITY_DATAPROCESSED</code></div>
+          <div class="v"><code>AtomicLong</code>; incremented after each task is successfully submitted to its lane's pool.</div>
+        </div>
+        <div class="kv">
+          <div class="k"><code>FAILED_TO_PROCESS</code> / <code>PRIORITY_FAILED_TO_PROCESS</code></div>
+          <div class="v"><code>AtomicLong</code>; incremented on invalid queue data or <code>RejectedExecutionException</code>.</div>
+        </div>
+        <div class="kv">
+          <div class="k"><code>executionIdWorkflowHash</code> &amp; <code>templateIdVsExecutionIds</code></div>
+          <div class="v">Shared <code>Hashtable</code> bookkeeping for <code>interruptTask</code> / <code>isTemplateExecuting</code> — both lanes write into them.</div>
+        </div>
+        <div class="kv">
+          <div class="k"><code>stopWorker</code></div>
+          <div class="v"><code>volatile boolean</code>; set by <code>shutdown()</code>, polled by both worker loops to exit.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" id="thread-pool">
+      <h2><span class="dot" style="background:var(--ok)"></span> Thread Pool — Default = 10 Per Lane</h2>
+      <ul class="bullet">
+        <li>Each lane gets its own <code>FixedThreadPool</code> sized by <code>MAX_THREADPOOL_SIZE</code> (defaults to 10). <code>priorityMaxPoolSize = maxPoolSize</code>, so both lanes have identical capacity.</li>
+        <li>Each thread executes one <code>PlayBookExecuteTemplateAction.run()</code> at a time.</li>
+        <li>When all threads in a lane are busy, the lane's worker calls <code>laneCondition.await()</code> on that lane's lock. New incoming tasks accumulate in the lane's <code>ObjectMessenger</code> (and overflow to disk if needed) until a slot frees up.</li>
+        <li>On task completion the wrapping <code>Runnable</code>'s <code>finally</code> block calls <code>signalAll</code> on the lane condition, waking the suspended worker so it can submit the next task.</li>
+        <li>The two lanes share <b>no thread budget</b> — priority work cannot be blocked or delayed by normal-lane load, and vice-versa.</li>
+        <li>On <code>shutdown()</code> any task the worker could not submit is re-enqueued into its own lane (priority lane via <code>enqueuePriority</code>, normal lane via <code>enqueue</code>) so nothing is lost.</li>
+      </ul>
+    </section>
+
+    <section class="card" id="component-architecture">
+      <h2><span class="dot" style="background:var(--warn)"></span> Component Architecture</h2>
+      <p class="muted">Click the diagram to zoom in / out and pan.</p>
+      <img class="diagram" src="assets/component-architecture.png" alt="PlayBookExecutionHandler — Component Architecture (Two-Lane)" />
+    </section>
+
+    <section class="card" id="workflow">
+      <h2><span class="dot" style="background:var(--bad)"></span> Workflow — Caller &amp; Worker</h2>
+      <img class="diagram" src="assets/worker-workflow.png" alt="PlayBookExecutionHandler — Workflow: Caller, Normal Worker, Priority Worker" />
+    </section>
+
+    <footer class="doc-footer">
+      Source: <code>Playbook Execution.pdf</code> + <code>PlayBook Diagrams v2</code> · Log360 SOAR · HLD
+    </footer>
+  </main>
+
+  <aside class="toc-rail" aria-label="On this page">
+    <div class="toc-title">On this page</div>
+    <nav class="toc-list">
+      <a href="#handler" class="toc-link">PlayBookExecution Handler</a>
+      <a href="#key-fields" class="toc-link">Key Fields</a>
+      <a href="#thread-pool" class="toc-link">Thread Pool</a>
+      <a href="#component-architecture" class="toc-link">Component Architecture</a>
+      <a href="#workflow" class="toc-link">Workflow</a>
+    </nav>
+  </aside>
+
+</div>
+
+<script src="../lightbox.js"></script>
+<script src="../toc.js"></script>
+</body>
+</html>

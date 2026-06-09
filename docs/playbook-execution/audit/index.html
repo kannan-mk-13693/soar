@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+<title>Playbook Audit Execution — Data Flow | Log360 SOAR</title>
+<link rel="stylesheet" href="../doc.css" />
+</head>
+<body>
+
+<header class="app-header">
+  <div class="title">
+    <div class="logo" style="background:linear-gradient(135deg,#7048e8,#4263eb);">PA</div>
+    <div>
+      <h1>Playbook Audit Execution — Data Flow</h1>
+      <div class="sub">HLD · DB → ElasticSearch · Audit Trail</div>
+    </div>
+  </div>
+  <div class="actions">
+    <a class="btn" href="../../../index.html">← Back to Tracker</a>
+  </div>
+</header>
+
+<nav class="crumbs">
+  <a href="../../../index.html">Tracker</a> ›
+  <a href="../../../index.html#tab-docs">Docs</a> ›
+  <a href="../index.html">Playbook Execution</a> ›
+  <span>Audit Execution</span>
+</nav>
+
+<div class="layout">
+
+  <main>
+
+    <section class="card" id="overview">
+      <h2><span class="dot"></span> Playbook Data Audit — DB to ElasticSearch</h2>
+      <h3 class="sub-h">Overview</h3>
+      <p>
+        Records a single playbook block-execution event into the audit trail. Called once per block
+        (or per status change) by <code>PlaybookAction.addExecutionAudit(...)</code> in the ADSF executor
+        layer, delegated through the <b>PlaybookFacade</b> SPI, and finally written to <b>Elasticsearch</b>
+        by the ELA-side implementation in <code>ELAIncidentWFHandler</code>.
+      </p>
+    </section>
+
+    <section class="card" id="parameters">
+      <h2><span class="dot" style="background:var(--accent-2)"></span> Parameters</h2>
+      <table class="params">
+        <thead>
+          <tr>
+            <th>Parameter</th>
+            <th>Resolves To</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>IM_WF_INTERFACE</code></td>
+            <td><span class="resolve">FQCN of SPI impl</span></td>
+            <td>Used by <code>PlaybookFacade</code> static block to bootstrap the delegate.</td>
+          </tr>
+          <tr>
+            <td><code>PLAYBOOKAUDITINDEX</code></td>
+            <td><span class="resolve">DAEUtils.IndexType</span></td>
+            <td>ES index family for playbook audit records.</td>
+          </tr>
+          <tr>
+            <td><code>DEFAULT_PLAYBOOK_AUDIT_NAME_PREFIX</code></td>
+            <td><span class="resolve">"playbookaudit_"</span></td>
+            <td>Index name prefix; suffixed by date bucket derived from <code>MODIFIED_TIME</code>.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="card" id="call-chain">
+      <h2><span class="dot" style="background:var(--ok)"></span> Call Chain</h2>
+      <div class="chain">
+        <div class="chain-step"><b>Caller</b><br/><span class="muted">ADSF executor layer</span></div>
+        <div class="chain-arrow">→</div>
+        <div class="chain-step"><b>PlaybookAction.addExecutionAudit(...)</b></div>
+        <div class="chain-arrow">→</div>
+        <div class="chain-step"><b>PlaybookFacade</b> SPI<br/><span class="muted">delegates</span></div>
+        <div class="chain-arrow">→</div>
+        <div class="chain-step"><b>ELAIncidentWFHandler</b><br/><span class="muted">ELA-side impl</span></div>
+        <div class="chain-arrow">→</div>
+        <div class="chain-step"><b>Elasticsearch</b><br/><span class="muted">playbookaudit_&lt;date&gt;</span></div>
+      </div>
+    </section>
+
+    <section class="card" id="flowchart">
+      <h2><span class="dot" style="background:var(--info)"></span> Flowchart — Caller → Facade SPI → ELA Impl → Elasticsearch</h2>
+      <p class="muted">Click the diagram to zoom in / out and pan.</p>
+      <div class="diagram svg-host" data-zoom-src="assets/flow.svg" data-zoom-alt="addPlaybookBlockAudit — Caller → Facade SPI → ELA Impl → Elasticsearch">
+        <object type="image/svg+xml" data="assets/flow.svg" aria-label="addPlaybookBlockAudit code-flow SVG" style="width:100%; display:block;"></object>
+      </div>
+    </section>
+
+    <footer class="doc-footer">
+      Source: <code>addPlaybookBlockAudit_flow.html</code> · Log360 SOAR · HLD
+    </footer>
+  </main>
+
+  <aside class="toc-rail" aria-label="On this page">
+    <div class="toc-title">On this page</div>
+    <nav class="toc-list">
+      <a href="#overview" class="toc-link">Overview</a>
+      <a href="#parameters" class="toc-link">Parameters</a>
+      <a href="#call-chain" class="toc-link">Call Chain</a>
+      <a href="#flowchart" class="toc-link">Flowchart</a>
+    </nav>
+  </aside>
+
+</div>
+
+<script src="../lightbox.js"></script>
+<script src="../toc.js"></script>
+</body>
+</html>
